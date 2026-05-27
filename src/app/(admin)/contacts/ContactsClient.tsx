@@ -1,12 +1,15 @@
 "use client";
 
-import { Download, Search } from "lucide-react";
+import { Download, RefreshCw, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MAIN_CONCERN_OPTIONS, SOURCE_OPTIONS } from "@/lib/constants";
 import { downloadCsv } from "@/lib/csv";
 import { createClient } from "@/lib/supabase/browser";
 import { Contact } from "@/lib/types";
+
+const PAGE_SIZE = 25;
+const EXPORT_LIMIT = 1000;
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-AU", {
@@ -16,116 +19,230 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
-function uniqueSuburbs(contacts: Contact[]) {
-  return Array.from(new Set(contacts.map((contact) => contact.suburb).filter(Boolean))).sort();
+function sanitizeSearch(value: string) {
+  return value.trim().replace(/[,%]/g, " ");
+}
+
+function contactToCsvRow(contact: Contact) {
+  return {
+    id: contact.id,
+    full_name: contact.full_name,
+    mobile: contact.mobile,
+    email: contact.email,
+    suburb: contact.suburb,
+    address: contact.address,
+    language_preference: contact.language_preference,
+    main_concern: contact.main_concern,
+    location_detail: contact.location_detail,
+    source: contact.source,
+    volunteer_interest: contact.volunteer_interest,
+    membership_interest: contact.membership_interest,
+    consent: contact.consent,
+    follow_up_needed: contact.follow_up_needed,
+    follow_up_status: contact.follow_up_status,
+    notes: contact.notes,
+    message: contact.message,
+    created_at: contact.created_at,
+    updated_at: contact.updated_at
+  };
 }
 
 export function ContactsClient() {
   const [contacts, setContacts] = useState<Contact[]>([]);
+  const [suburbs, setSuburbs] = useState<string[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [suburb, setSuburb] = useState("");
   const [source, setSource] = useState("");
   const [mainConcern, setMainConcern] = useState("");
   const [volunteer, setVolunteer] = useState("");
   const [followUp, setFollowUp] = useState("");
+  const [page, setPage] = useState(1);
+  const [reloadKey, setReloadKey] = useState(0);
   const router = useRouter();
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 350);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [search]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, followUp, mainConcern, source, suburb, volunteer]);
+
+  useEffect(() => {
+    async function loadSuburbs() {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("contacts")
+        .select("suburb")
+        .not("suburb", "is", null)
+        .order("suburb", { ascending: true })
+        .limit(1000);
+
+      const uniqueSuburbs = Array.from(
+        new Set((data || []).map((row) => row.suburb).filter(Boolean))
+      ).sort();
+      setSuburbs(uniqueSuburbs);
+    }
+
+    void loadSuburbs();
+  }, [reloadKey]);
 
   useEffect(() => {
     async function loadContacts() {
       setLoading(true);
+      setError("");
+      setNotice("");
+
       const supabase = createClient();
-      const { data, error: loadError } = await supabase
-        .from("contacts")
-        .select("*")
+      let query = supabase.from("contacts").select("*", { count: "exact" });
+
+      const safeSearch = sanitizeSearch(debouncedSearch);
+      if (safeSearch) {
+        const pattern = `%${safeSearch}%`;
+        query = query.or(`full_name.ilike.${pattern},mobile.ilike.${pattern},email.ilike.${pattern}`);
+      }
+
+      if (suburb) {
+        query = query.eq("suburb", suburb);
+      }
+
+      if (source) {
+        query = query.eq("source", source);
+      }
+
+      if (mainConcern) {
+        query = query.eq("main_concern", mainConcern);
+      }
+
+      if (volunteer) {
+        query = query.eq("volunteer_interest", volunteer === "yes");
+      }
+
+      if (followUp) {
+        query = query.eq("follow_up_needed", followUp === "yes");
+      }
+
+      const from = (page - 1) * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+      const { data, error: loadError, count } = await query
         .order("created_at", { ascending: false })
-        .limit(5000);
+        .range(from, to);
 
       if (loadError) {
         setError("Could not load contacts.");
       } else {
         setContacts((data || []) as Contact[]);
+        setTotalCount(count || 0);
       }
 
       setLoading(false);
     }
 
-    loadContacts();
-  }, []);
+    void loadContacts();
+  }, [debouncedSearch, followUp, mainConcern, page, reloadKey, source, suburb, volunteer]);
 
-  const suburbs = useMemo(() => uniqueSuburbs(contacts), [contacts]);
+  async function exportFilteredContacts() {
+    setExporting(true);
+    setError("");
+    setNotice("");
 
-  const filteredContacts = useMemo(() => {
-    const normalizedSearch = search.trim().toLowerCase();
+    const supabase = createClient();
+    let query = supabase.from("contacts").select("*");
 
-    return contacts.filter((contact) => {
-      const matchesSearch =
-        !normalizedSearch ||
-        [contact.full_name, contact.mobile, contact.email]
-          .filter(Boolean)
-          .some((value) => value!.toLowerCase().includes(normalizedSearch));
+    const safeSearch = sanitizeSearch(debouncedSearch);
+    if (safeSearch) {
+      const pattern = `%${safeSearch}%`;
+      query = query.or(`full_name.ilike.${pattern},mobile.ilike.${pattern},email.ilike.${pattern}`);
+    }
 
-      const matchesSuburb = !suburb || contact.suburb === suburb;
-      const matchesSource = !source || contact.source === source;
-      const matchesConcern = !mainConcern || contact.main_concern === mainConcern;
-      const matchesVolunteer =
-        !volunteer || contact.volunteer_interest === (volunteer === "yes");
-      const matchesFollowUp = !followUp || contact.follow_up_needed === (followUp === "yes");
+    if (suburb) {
+      query = query.eq("suburb", suburb);
+    }
 
-      return (
-        matchesSearch &&
-        matchesSuburb &&
-        matchesSource &&
-        matchesConcern &&
-        matchesVolunteer &&
-        matchesFollowUp
-      );
-    });
-  }, [contacts, followUp, mainConcern, search, source, suburb, volunteer]);
+    if (source) {
+      query = query.eq("source", source);
+    }
 
-  function exportFilteredContacts() {
-    downloadCsv(
-      `community-contacts-${new Date().toISOString().slice(0, 10)}.csv`,
-      filteredContacts.map((contact) => ({
-        id: contact.id,
-        full_name: contact.full_name,
-        mobile: contact.mobile,
-        email: contact.email,
-        suburb: contact.suburb,
-        language_preference: contact.language_preference,
-        main_concern: contact.main_concern,
-        location_detail: contact.location_detail,
-        source: contact.source,
-        volunteer_interest: contact.volunteer_interest,
-        membership_interest: contact.membership_interest,
-        consent: contact.consent,
-        follow_up_needed: contact.follow_up_needed,
-        follow_up_status: contact.follow_up_status,
-        notes: contact.notes,
-        message: contact.message,
-        created_at: contact.created_at,
-        updated_at: contact.updated_at
-      }))
-    );
+    if (mainConcern) {
+      query = query.eq("main_concern", mainConcern);
+    }
+
+    if (volunteer) {
+      query = query.eq("volunteer_interest", volunteer === "yes");
+    }
+
+    if (followUp) {
+      query = query.eq("follow_up_needed", followUp === "yes");
+    }
+
+    const { data, error: exportError } = await query
+      .order("created_at", { ascending: false })
+      .limit(EXPORT_LIMIT);
+
+    setExporting(false);
+
+    if (exportError) {
+      setError("Could not export contacts.");
+      return;
+    }
+
+    const rows = ((data || []) as Contact[]).map(contactToCsvRow);
+    downloadCsv(`community-contacts-${new Date().toISOString().slice(0, 10)}.csv`, rows);
+
+    if (totalCount > EXPORT_LIMIT) {
+      setNotice(`Exported the first ${EXPORT_LIMIT} filtered contacts to keep usage predictable.`);
+    }
   }
+
+  const rangeLabel = useMemo(() => {
+    if (totalCount === 0) {
+      return "0 shown";
+    }
+
+    const from = (page - 1) * PAGE_SIZE + 1;
+    const to = Math.min(page * PAGE_SIZE, totalCount);
+    return `${from}-${to} shown from ${totalCount} total`;
+  }, [page, totalCount]);
 
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-2xl font-semibold text-ink">Contacts</h2>
-          <p className="mt-1 text-sm text-muted">{filteredContacts.length} shown from {contacts.length} total.</p>
+          <p className="mt-1 text-sm text-muted">{rangeLabel}</p>
         </div>
-        <button
-          type="button"
-          className="button-primary"
-          onClick={exportFilteredContacts}
-          disabled={filteredContacts.length === 0}
-        >
-          <Download aria-hidden="true" className="h-4 w-4" />
-          Export CSV
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            className="button-secondary"
+            onClick={() => setReloadKey((current) => current + 1)}
+            disabled={loading}
+          >
+            <RefreshCw aria-hidden="true" className="h-4 w-4" />
+            Refresh
+          </button>
+          <button
+            type="button"
+            className="button-primary"
+            onClick={exportFilteredContacts}
+            disabled={totalCount === 0 || exporting}
+          >
+            <Download aria-hidden="true" className="h-4 w-4" />
+            {exporting ? "Exporting..." : "Export CSV"}
+          </button>
+        </div>
       </div>
 
       <section className="panel p-4">
@@ -198,7 +315,8 @@ export function ContactsClient() {
         </div>
       </section>
 
-      {error ? <p className="text-sm font-semibold text-red-700">{error}</p> : null}
+      {notice ? <p className="rounded-md bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">{notice}</p> : null}
+      {error ? <p className="rounded-md bg-red-50 px-3 py-2 text-sm font-semibold text-red-800">{error}</p> : null}
 
       <section className="panel overflow-hidden">
         <div className="overflow-x-auto">
@@ -224,8 +342,8 @@ export function ContactsClient() {
                     Loading contacts...
                   </td>
                 </tr>
-              ) : filteredContacts.length > 0 ? (
-                filteredContacts.map((contact) => (
+              ) : contacts.length > 0 ? (
+                contacts.map((contact) => (
                   <tr
                     key={contact.id}
                     tabIndex={0}
@@ -260,6 +378,30 @@ export function ContactsClient() {
           </table>
         </div>
       </section>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-muted">
+          Page {Math.min(page, totalPages)} of {totalPages}
+        </p>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            className="button-secondary"
+            onClick={() => setPage((current) => Math.max(1, current - 1))}
+            disabled={page <= 1 || loading}
+          >
+            Previous
+          </button>
+          <button
+            type="button"
+            className="button-secondary"
+            onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+            disabled={page >= totalPages || loading}
+          >
+            Next
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

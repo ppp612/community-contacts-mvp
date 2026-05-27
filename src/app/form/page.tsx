@@ -25,6 +25,8 @@ const translations = {
     mobile: "Mobile",
     email: "Email",
     suburb: "Suburb *",
+    address: "Address, optional",
+    addressPlaceholder: "Unit / street address, optional",
     preferredLanguage: "Preferred language",
     localConcernTitle: "Your local concern",
     localConcernHelp: "Share the issue or place you would like the team to know about.",
@@ -57,6 +59,8 @@ const translations = {
     mobile: "手机",
     email: "邮箱",
     suburb: "居住区域 *",
+    address: "住址，可选",
+    addressPlaceholder: "单元号 / 街道地址，可选",
     preferredLanguage: "偏好语言",
     localConcernTitle: "您关心的社区问题",
     localConcernHelp: "请告诉我们您关心的问题或地点。",
@@ -88,6 +92,8 @@ const translations = {
     mobile: "휴대전화",
     email: "이메일",
     suburb: "거주 지역 *",
+    address: "주소, 선택 사항",
+    addressPlaceholder: "유닛 / 도로명 주소, 선택 사항",
     preferredLanguage: "선호 언어",
     localConcernTitle: "지역 관심 사항",
     localConcernHelp: "알리고 싶은 문제나 장소를 공유해 주세요.",
@@ -119,6 +125,8 @@ const translations = {
     mobile: "Số điện thoại",
     email: "Email",
     suburb: "Khu vực sinh sống *",
+    address: "Địa chỉ, không bắt buộc",
+    addressPlaceholder: "Số căn / địa chỉ đường, không bắt buộc",
     preferredLanguage: "Ngôn ngữ ưu tiên",
     localConcernTitle: "Vấn đề địa phương bạn quan tâm",
     localConcernHelp: "Chia sẻ vấn đề hoặc địa điểm mà bạn muốn nhóm biết.",
@@ -234,6 +242,7 @@ const initialForm = {
   mobile: "",
   email: "",
   suburb: "",
+  address: "",
   language_preference: "",
   main_concern: "",
   location_detail: "",
@@ -272,6 +281,7 @@ export default function PublicContactFormPage() {
       mobile: form.mobile.trim() || null,
       email: form.email.trim() || null,
       suburb: form.suburb.trim(),
+      address: form.address.trim() || null,
       language_preference: form.language_preference || null,
       main_concern: form.main_concern || null,
       location_detail: form.location_detail.trim() || null,
@@ -386,6 +396,16 @@ export default function PublicContactFormPage() {
                   autoComplete="address-level2"
                   value={form.suburb}
                   onChange={(event) => updateField("suburb", event.target.value)}
+                />
+              </label>
+              <label className="space-y-2">
+                <span className="text-sm font-semibold text-slate-800">{t.address}</span>
+                <input
+                  className="h-12 w-full rounded-md border border-slate-300 bg-white px-4 text-base text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-slate-700 focus:ring-4 focus:ring-slate-200"
+                  autoComplete="street-address"
+                  placeholder={t.addressPlaceholder}
+                  value={form.address}
+                  onChange={(event) => updateField("address", event.target.value)}
                 />
               </label>
               <label className="space-y-2">

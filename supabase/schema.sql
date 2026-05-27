@@ -6,6 +6,7 @@ create table if not exists public.contacts (
   mobile text,
   email text,
   suburb text not null,
+  address text,
   language_preference text,
   main_concern text,
   location_detail text,
@@ -27,6 +28,9 @@ create table if not exists public.contacts (
 
 alter table public.contacts
 add column if not exists location_detail text;
+
+alter table public.contacts
+add column if not exists address text;
 
 create table if not exists public.interactions (
   id uuid primary key default gen_random_uuid(),

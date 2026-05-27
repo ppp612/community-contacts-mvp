@@ -1,7 +1,8 @@
 "use client";
 
-import { ArrowLeft, MessageSquarePlus, Save } from "lucide-react";
+import { ArrowLeft, MessageSquarePlus, Save, Trash2 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { FOLLOW_UP_STATUS_OPTIONS, INTERACTION_TYPE_OPTIONS } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/browser";
@@ -37,8 +38,10 @@ export function ContactDetailClient({ contactId }: { contactId: string }) {
   const [followUpRequired, setFollowUpRequired] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const router = useRouter();
 
   async function loadContact() {
     setLoading(true);
@@ -140,6 +143,32 @@ export function ContactDetailClient({ contactId }: { contactId: string }) {
     await loadContact();
   }
 
+  async function deleteContact() {
+    const confirmed = window.confirm(
+      "Delete this contact? This will also delete all interaction records for this contact."
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setDeleting(true);
+    setMessage("");
+    setError("");
+
+    const supabase = createClient();
+    const { error: deleteError } = await supabase.from("contacts").delete().eq("id", contactId);
+
+    if (deleteError) {
+      setDeleting(false);
+      setError("Could not delete contact.");
+      return;
+    }
+
+    router.push("/contacts");
+    router.refresh();
+  }
+
   if (loading) {
     return <div className="panel p-5 text-sm text-muted">Loading contact...</div>;
   }
@@ -159,10 +188,16 @@ export function ContactDetailClient({ contactId }: { contactId: string }) {
           <h2 className="mt-3 text-2xl font-semibold text-ink">{contact.full_name}</h2>
           <p className="mt-1 text-sm text-muted">Created {formatDateTime(contact.created_at)}</p>
         </div>
-        <button type="button" className="button-primary" onClick={saveContact} disabled={saving}>
-          <Save aria-hidden="true" className="h-4 w-4" />
-          {saving ? "Saving..." : "Save changes"}
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className="button-secondary border-red-200 text-red-700 hover:border-red-400 hover:text-red-800" onClick={deleteContact} disabled={deleting}>
+            <Trash2 aria-hidden="true" className="h-4 w-4" />
+            {deleting ? "Deleting..." : "Delete contact"}
+          </button>
+          <button type="button" className="button-primary" onClick={saveContact} disabled={saving || deleting}>
+            <Save aria-hidden="true" className="h-4 w-4" />
+            {saving ? "Saving..." : "Save changes"}
+          </button>
+        </div>
       </div>
 
       {message ? <p className="rounded-md bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800">{message}</p> : null}
@@ -175,6 +210,7 @@ export function ContactDetailClient({ contactId }: { contactId: string }) {
             <DetailItem label="Mobile" value={contact.mobile} />
             <DetailItem label="Email" value={contact.email} />
             <DetailItem label="Suburb" value={contact.suburb} />
+            <DetailItem label="Address" value={contact.address} />
             <DetailItem label="Language" value={contact.language_preference} />
             <DetailItem label="Main Concern" value={contact.main_concern} />
             <DetailItem label="Street or Nearby Location" value={contact.location_detail} />

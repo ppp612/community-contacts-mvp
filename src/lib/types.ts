@@ -4,6 +4,7 @@ export type Contact = {
   mobile: string | null;
   email: string | null;
   suburb: string;
+  address: string | null;
   language_preference: string | null;
   main_concern: string | null;
   location_detail: string | null;
