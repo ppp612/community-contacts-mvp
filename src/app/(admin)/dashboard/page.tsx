@@ -57,7 +57,7 @@ export default async function DashboardPage() {
         <StatCard label="Total Contacts" value={totalResult.count || 0} />
         <StatCard label="New Contacts This Month" value={monthResult.count || 0} />
         <StatCard label="Volunteer Interested" value={volunteerResult.count || 0} />
-        <StatCard label="Follow-up Needed" value={followUpResult.count || 0} />
+        <StatCard label="Follow-up Needed" value={followUpResult.count || 0} href="/follow-ups" />
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
