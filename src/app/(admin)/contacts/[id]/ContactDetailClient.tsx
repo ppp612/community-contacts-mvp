@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, MessageSquarePlus, Save, Trash2 } from "lucide-react";
+import { Archive, ArrowLeft, CheckCircle2, Clock3, MessageSquarePlus, PhoneCall, Save, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
@@ -98,6 +98,33 @@ export function ContactDetailClient({ contactId }: { contactId: string }) {
     }
 
     setMessage("Contact updated.");
+    await loadContact();
+  }
+
+  async function applyFollowUpPreset(nextStatus: string, nextNeeded: boolean) {
+    setSaving(true);
+    setMessage("");
+    setError("");
+
+    const supabase = createClient();
+    const { error: updateError } = await supabase
+      .from("contacts")
+      .update({
+        follow_up_needed: nextNeeded,
+        follow_up_status: nextStatus
+      })
+      .eq("id", contactId);
+
+    setSaving(false);
+
+    if (updateError) {
+      setError("Could not update follow-up.");
+      return;
+    }
+
+    setFollowUpNeeded(nextNeeded);
+    setFollowUpStatus(nextStatus);
+    setMessage("Follow-up updated.");
     await loadContact();
   }
 
@@ -228,6 +255,53 @@ export function ContactDetailClient({ contactId }: { contactId: string }) {
         <div className="panel p-5">
           <h3 className="text-base font-semibold text-ink">Follow-up</h3>
           <div className="mt-4 space-y-4">
+            <div className="grid gap-2 sm:grid-cols-2">
+              <button
+                type="button"
+                className="button-secondary justify-center"
+                onClick={() => applyFollowUpPreset("new", true)}
+                disabled={saving || deleting}
+              >
+                <Clock3 aria-hidden="true" className="h-4 w-4" />
+                Need follow-up
+              </button>
+              <button
+                type="button"
+                className="button-secondary justify-center"
+                onClick={() => applyFollowUpPreset("in_progress", true)}
+                disabled={saving || deleting}
+              >
+                <Clock3 aria-hidden="true" className="h-4 w-4" />
+                In progress
+              </button>
+              <button
+                type="button"
+                className="button-secondary justify-center"
+                onClick={() => applyFollowUpPreset("contacted", false)}
+                disabled={saving || deleting}
+              >
+                <PhoneCall aria-hidden="true" className="h-4 w-4" />
+                Contacted
+              </button>
+              <button
+                type="button"
+                className="button-secondary justify-center"
+                onClick={() => applyFollowUpPreset("resolved", false)}
+                disabled={saving || deleting}
+              >
+                <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
+                Resolved
+              </button>
+              <button
+                type="button"
+                className="button-secondary justify-center sm:col-span-2"
+                onClick={() => applyFollowUpPreset("archived", false)}
+                disabled={saving || deleting}
+              >
+                <Archive aria-hidden="true" className="h-4 w-4" />
+                Archive
+              </button>
+            </div>
             <label className="flex items-center gap-3 text-sm font-medium text-ink">
               <input
                 type="checkbox"
@@ -255,6 +329,10 @@ export function ContactDetailClient({ contactId }: { contactId: string }) {
                 onChange={(event) => setNotes(event.target.value)}
               />
             </label>
+            <button type="button" className="button-primary w-full justify-center" onClick={saveContact} disabled={saving || deleting}>
+              <Save aria-hidden="true" className="h-4 w-4" />
+              {saving ? "Saving..." : "Save follow-up"}
+            </button>
           </div>
         </div>
       </section>
