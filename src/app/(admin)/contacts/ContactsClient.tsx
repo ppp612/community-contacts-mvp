@@ -10,6 +10,8 @@ import { Contact } from "@/lib/types";
 
 const PAGE_SIZE = 25;
 const EXPORT_LIMIT = 1000;
+const LIST_COLUMNS =
+  "id, full_name, mobile, email, suburb, language_preference, main_concern, source, volunteer_interest, follow_up_needed, follow_up_status, created_at";
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-AU", {
@@ -63,7 +65,7 @@ function StatusBadge({ children, tone = "slate" }: { children: React.ReactNode; 
 export function ContactsClient() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [suburbs, setSuburbs] = useState<string[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
+  const [hasNextPage, setHasNextPage] = useState(false);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState("");
@@ -78,8 +80,6 @@ export function ContactsClient() {
   const [page, setPage] = useState(1);
   const [reloadKey, setReloadKey] = useState(0);
   const router = useRouter();
-
-  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -101,7 +101,7 @@ export function ContactsClient() {
         .select("suburb")
         .not("suburb", "is", null)
         .order("suburb", { ascending: true })
-        .limit(1000);
+        .limit(250);
 
       const uniqueSuburbs = Array.from(
         new Set((data || []).map((row) => row.suburb).filter(Boolean))
@@ -119,7 +119,7 @@ export function ContactsClient() {
       setNotice("");
 
       const supabase = createClient();
-      let query = supabase.from("contacts").select("*", { count: "exact" });
+      let query = supabase.from("contacts").select(LIST_COLUMNS);
 
       const safeSearch = sanitizeSearch(debouncedSearch);
       if (safeSearch) {
@@ -148,16 +148,17 @@ export function ContactsClient() {
       }
 
       const from = (page - 1) * PAGE_SIZE;
-      const to = from + PAGE_SIZE - 1;
-      const { data, error: loadError, count } = await query
+      const to = from + PAGE_SIZE;
+      const { data, error: loadError } = await query
         .order("created_at", { ascending: false })
         .range(from, to);
 
       if (loadError) {
         setError("Could not load contacts.");
       } else {
-        setContacts((data || []) as Contact[]);
-        setTotalCount(count || 0);
+        const rows = (data || []) as Contact[];
+        setContacts(rows.slice(0, PAGE_SIZE));
+        setHasNextPage(rows.length > PAGE_SIZE);
       }
 
       setLoading(false);
@@ -214,20 +215,20 @@ export function ContactsClient() {
     const rows = ((data || []) as Contact[]).map(contactToCsvRow);
     downloadCsv(`community-contacts-${new Date().toISOString().slice(0, 10)}.csv`, rows);
 
-    if (totalCount > EXPORT_LIMIT) {
-      setNotice(`Exported the first ${EXPORT_LIMIT} filtered contacts to keep usage predictable.`);
+    if ((data || []).length >= EXPORT_LIMIT) {
+      setNotice(`Exported up to ${EXPORT_LIMIT} filtered contacts to keep usage predictable.`);
     }
   }
 
   const rangeLabel = useMemo(() => {
-    if (totalCount === 0) {
+    if (!loading && contacts.length === 0) {
       return "0 shown";
     }
 
     const from = (page - 1) * PAGE_SIZE + 1;
-    const to = Math.min(page * PAGE_SIZE, totalCount);
-    return `${from}-${to} shown from ${totalCount} total`;
-  }, [page, totalCount]);
+    const to = from + contacts.length - 1;
+    return `${from}-${to} shown${hasNextPage ? ", more available" : ""}`;
+  }, [contacts.length, hasNextPage, loading, page]);
 
   return (
     <div className="space-y-5">
@@ -250,7 +251,7 @@ export function ContactsClient() {
             type="button"
             className="button-primary"
             onClick={exportFilteredContacts}
-            disabled={totalCount === 0 || exporting}
+            disabled={contacts.length === 0 || exporting}
           >
             <Download aria-hidden="true" className="h-4 w-4" />
             {exporting ? "Exporting..." : "Export CSV"}
@@ -400,7 +401,7 @@ export function ContactsClient() {
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted">
-          Page {Math.min(page, totalPages)} of {totalPages}
+          Page {page}
         </p>
         <div className="flex gap-2">
           <button
@@ -414,8 +415,8 @@ export function ContactsClient() {
           <button
             type="button"
             className="button-secondary"
-            onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
-            disabled={page >= totalPages || loading}
+            onClick={() => setPage((current) => current + 1)}
+            disabled={!hasNextPage || loading}
           >
             Next
           </button>

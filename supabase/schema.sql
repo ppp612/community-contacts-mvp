@@ -1,4 +1,5 @@
 create extension if not exists "pgcrypto";
+create extension if not exists "pg_trgm";
 
 create table if not exists public.contacts (
   id uuid primary key default gen_random_uuid(),
@@ -68,6 +69,12 @@ create index if not exists contacts_suburb_idx on public.contacts(suburb);
 create index if not exists contacts_source_idx on public.contacts(source);
 create index if not exists contacts_main_concern_idx on public.contacts(main_concern);
 create index if not exists contacts_follow_up_needed_idx on public.contacts(follow_up_needed);
+create index if not exists contacts_follow_up_status_idx on public.contacts(follow_up_status);
+create index if not exists contacts_volunteer_interest_idx on public.contacts(volunteer_interest);
+create index if not exists contacts_follow_up_created_idx on public.contacts(follow_up_needed, created_at desc);
+create index if not exists contacts_full_name_trgm_idx on public.contacts using gin (full_name gin_trgm_ops);
+create index if not exists contacts_mobile_trgm_idx on public.contacts using gin (mobile gin_trgm_ops);
+create index if not exists contacts_email_trgm_idx on public.contacts using gin (email gin_trgm_ops);
 create index if not exists interactions_contact_created_idx on public.interactions(contact_id, created_at desc);
 
 alter table public.contacts enable row level security;

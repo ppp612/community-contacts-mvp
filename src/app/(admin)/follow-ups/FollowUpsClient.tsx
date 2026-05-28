@@ -5,11 +5,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FOLLOW_UP_STATUS_OPTIONS, MAIN_CONCERN_OPTIONS } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/browser";
-import { Contact, Interaction } from "@/lib/types";
+import { Contact } from "@/lib/types";
 
 const PAGE_SIZE = 25;
-
-type LatestInteractions = Record<string, Interaction | undefined>;
+const LIST_COLUMNS =
+  "id, full_name, mobile, suburb, main_concern, follow_up_status, created_at";
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-AU", {
@@ -29,9 +29,8 @@ function statusLabel(value: string | null) {
 
 export function FollowUpsClient() {
   const [contacts, setContacts] = useState<Contact[]>([]);
-  const [latestInteractions, setLatestInteractions] = useState<LatestInteractions>({});
   const [suburbs, setSuburbs] = useState<string[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
+  const [hasNextPage, setHasNextPage] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
@@ -42,8 +41,6 @@ export function FollowUpsClient() {
   const [page, setPage] = useState(1);
   const [reloadKey, setReloadKey] = useState(0);
   const router = useRouter();
-
-  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -66,7 +63,7 @@ export function FollowUpsClient() {
         .eq("follow_up_needed", true)
         .not("suburb", "is", null)
         .order("suburb", { ascending: true })
-        .limit(1000);
+        .limit(250);
 
       const uniqueSuburbs = Array.from(
         new Set((data || []).map((row) => row.suburb).filter(Boolean))
@@ -85,7 +82,7 @@ export function FollowUpsClient() {
       const supabase = createClient();
       let query = supabase
         .from("contacts")
-        .select("*", { count: "exact" })
+        .select(LIST_COLUMNS)
         .eq("follow_up_needed", true);
 
       const safeSearch = sanitizeSearch(debouncedSearch);
@@ -107,49 +104,22 @@ export function FollowUpsClient() {
       }
 
       const from = (page - 1) * PAGE_SIZE;
-      const to = from + PAGE_SIZE - 1;
-      const { data, error: loadError, count } = await query
+      const to = from + PAGE_SIZE;
+      const { data, error: loadError } = await query
         .order("created_at", { ascending: false })
         .range(from, to);
 
       if (loadError) {
         setError("Could not load follow-ups.");
         setContacts([]);
-        setLatestInteractions({});
-        setTotalCount(0);
+        setHasNextPage(false);
         setLoading(false);
         return;
       }
 
-      const loadedContacts = (data || []) as Contact[];
-      setContacts(loadedContacts);
-      setTotalCount(count || 0);
-
-      const contactIds = loadedContacts.map((contact) => contact.id);
-      if (contactIds.length === 0) {
-        setLatestInteractions({});
-        setLoading(false);
-        return;
-      }
-
-      const { data: interactionRows } = await supabase
-        .from("interactions")
-        .select("*")
-        .in("contact_id", contactIds)
-        .order("created_at", { ascending: false })
-        .limit(contactIds.length * 3);
-
-      const latestByContact = ((interactionRows || []) as Interaction[]).reduce<LatestInteractions>(
-        (accumulator, interaction) => {
-          if (!accumulator[interaction.contact_id]) {
-            accumulator[interaction.contact_id] = interaction;
-          }
-          return accumulator;
-        },
-        {}
-      );
-
-      setLatestInteractions(latestByContact);
+      const rows = (data || []) as Contact[];
+      setContacts(rows.slice(0, PAGE_SIZE));
+      setHasNextPage(rows.length > PAGE_SIZE);
       setLoading(false);
     }
 
@@ -157,14 +127,14 @@ export function FollowUpsClient() {
   }, [debouncedSearch, mainConcern, page, reloadKey, status, suburb]);
 
   const rangeLabel = useMemo(() => {
-    if (totalCount === 0) {
+    if (!loading && contacts.length === 0) {
       return "0 open follow-ups";
     }
 
     const from = (page - 1) * PAGE_SIZE + 1;
-    const to = Math.min(page * PAGE_SIZE, totalCount);
-    return `${from}-${to} shown from ${totalCount} open follow-ups`;
-  }, [page, totalCount]);
+    const to = from + contacts.length - 1;
+    return `${from}-${to} open follow-ups${hasNextPage ? ", more available" : ""}`;
+  }, [contacts.length, hasNextPage, loading, page]);
 
   return (
     <div className="space-y-5">
@@ -246,21 +216,18 @@ export function FollowUpsClient() {
                 <th className="table-th">Suburb</th>
                 <th className="table-th">Main Concern</th>
                 <th className="table-th">Status</th>
-                <th className="table-th">Latest Interaction</th>
                 <th className="table-th">Created At</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td className="table-td" colSpan={7}>
+                  <td className="table-td" colSpan={6}>
                     Loading follow-ups...
                   </td>
                 </tr>
               ) : contacts.length > 0 ? (
-                contacts.map((contact) => {
-                  const latestInteraction = latestInteractions[contact.id];
-                  return (
+                contacts.map((contact) => (
                     <tr
                       key={contact.id}
                       tabIndex={0}
@@ -281,18 +248,12 @@ export function FollowUpsClient() {
                           {statusLabel(contact.follow_up_status)}
                         </span>
                       </td>
-                      <td className="table-td max-w-xs truncate">
-                        {latestInteraction
-                          ? `${latestInteraction.interaction_type || "other"}: ${latestInteraction.summary}`
-                          : "-"}
-                      </td>
                       <td className="table-td">{formatDate(contact.created_at)}</td>
                     </tr>
-                  );
-                })
+                ))
               ) : (
                 <tr>
-                  <td className="table-td" colSpan={7}>
+                  <td className="table-td" colSpan={6}>
                     No open follow-ups match the current filters.
                   </td>
                 </tr>
@@ -304,7 +265,7 @@ export function FollowUpsClient() {
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted">
-          Page {Math.min(page, totalPages)} of {totalPages}
+          Page {page}
         </p>
         <div className="flex gap-2">
           <button
@@ -318,8 +279,8 @@ export function FollowUpsClient() {
           <button
             type="button"
             className="button-secondary"
-            onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
-            disabled={page >= totalPages || loading}
+            onClick={() => setPage((current) => current + 1)}
+            disabled={!hasNextPage || loading}
           >
             Next
           </button>

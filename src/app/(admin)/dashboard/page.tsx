@@ -39,7 +39,7 @@ export default async function DashboardPage() {
       .from("contacts")
       .select("suburb, source")
       .order("created_at", { ascending: false })
-      .limit(1000)
+      .limit(250)
   ]);
 
   const groupRows = (groupResult.data || []) as Pick<Contact, "suburb" | "source">[];
@@ -63,7 +63,7 @@ export default async function DashboardPage() {
       <section className="grid gap-4 lg:grid-cols-2">
         <div className="panel p-5">
           <h3 className="text-base font-semibold text-ink">Contacts by Suburb</h3>
-          <p className="mt-1 text-xs text-muted">Based on the latest 1000 contacts to keep usage predictable.</p>
+          <p className="mt-1 text-xs text-muted">Based on recent contacts to keep the dashboard quick.</p>
           <div className="mt-4 space-y-3">
             {suburbCounts.length > 0 ? (
               suburbCounts.map(([label, count]) => (
@@ -80,7 +80,7 @@ export default async function DashboardPage() {
 
         <div className="panel p-5">
           <h3 className="text-base font-semibold text-ink">Contacts by Source</h3>
-          <p className="mt-1 text-xs text-muted">Based on the latest 1000 contacts to keep usage predictable.</p>
+          <p className="mt-1 text-xs text-muted">Based on recent contacts to keep the dashboard quick.</p>
           <div className="mt-4 space-y-3">
             {sourceCounts.length > 0 ? (
               sourceCounts.map(([label, count]) => (
