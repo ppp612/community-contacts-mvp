@@ -277,7 +277,7 @@ export function ContactDetailClient({ contactId }: { contactId: string }) {
               <button
                 type="button"
                 className="button-secondary justify-center"
-                onClick={() => applyFollowUpPreset("contacted", false)}
+                onClick={() => applyFollowUpPreset("contacted", followUpNeeded)}
                 disabled={saving || deleting}
               >
                 <PhoneCall aria-hidden="true" className="h-4 w-4" />

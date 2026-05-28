@@ -47,6 +47,19 @@ function contactToCsvRow(contact: Contact) {
   };
 }
 
+function StatusBadge({ children, tone = "slate" }: { children: React.ReactNode; tone?: "green" | "slate" }) {
+  const classes =
+    tone === "green"
+      ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+      : "border-slate-200 bg-slate-50 text-slate-700";
+
+  return (
+    <span className={`inline-flex rounded-full border px-2 py-1 text-xs font-semibold ${classes}`}>
+      {children}
+    </span>
+  );
+}
+
 export function ContactsClient() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [suburbs, setSuburbs] = useState<string[]>([]);
@@ -332,13 +345,14 @@ export function ContactsClient() {
                 <th className="table-th">Source</th>
                 <th className="table-th">Volunteer</th>
                 <th className="table-th">Follow-up Needed</th>
+                <th className="table-th">Status</th>
                 <th className="table-th">Created At</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td className="table-td" colSpan={10}>
+                  <td className="table-td" colSpan={11}>
                     Loading contacts...
                   </td>
                 </tr>
@@ -363,13 +377,18 @@ export function ContactsClient() {
                     <td className="table-td">{contact.main_concern || "-"}</td>
                     <td className="table-td">{contact.source || "-"}</td>
                     <td className="table-td">{contact.volunteer_interest ? "Yes" : "No"}</td>
-                    <td className="table-td">{contact.follow_up_needed ? "Yes" : "No"}</td>
+                    <td className="table-td">
+                      <StatusBadge tone={contact.follow_up_needed ? "green" : "slate"}>
+                        {contact.follow_up_needed ? "Needs follow-up" : "No follow-up"}
+                      </StatusBadge>
+                    </td>
+                    <td className="table-td">{contact.follow_up_status || "new"}</td>
                     <td className="table-td">{formatDate(contact.created_at)}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td className="table-td" colSpan={10}>
+                  <td className="table-td" colSpan={11}>
                     No contacts match the current filters.
                   </td>
                 </tr>
