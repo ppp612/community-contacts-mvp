@@ -11,7 +11,7 @@ import { Contact } from "@/lib/types";
 const PAGE_SIZE = 25;
 const EXPORT_LIMIT = 1000;
 const LIST_COLUMNS =
-  "id, full_name, mobile, email, suburb, language_preference, main_concern, source, volunteer_interest, follow_up_needed, follow_up_status, created_at";
+  "id, full_name, mobile, email, suburb, language_preference, main_concern, source, volunteer_interest, book_club_member, follow_up_needed, follow_up_status, created_at";
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-AU", {
@@ -39,6 +39,7 @@ function contactToCsvRow(contact: Contact) {
     source: contact.source,
     volunteer_interest: contact.volunteer_interest,
     membership_interest: contact.membership_interest,
+    book_club_member: contact.book_club_member,
     consent: contact.consent,
     follow_up_needed: contact.follow_up_needed,
     follow_up_status: contact.follow_up_status,
@@ -345,6 +346,7 @@ export function ContactsClient() {
                 <th className="table-th">Main Concern</th>
                 <th className="table-th">Source</th>
                 <th className="table-th">Volunteer</th>
+                <th className="table-th">Book Club</th>
                 <th className="table-th">Follow-up Needed</th>
                 <th className="table-th">Status</th>
                 <th className="table-th">Created At</th>
@@ -353,7 +355,7 @@ export function ContactsClient() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td className="table-td" colSpan={11}>
+                  <td className="table-td" colSpan={12}>
                     Loading contacts...
                   </td>
                 </tr>
@@ -378,6 +380,7 @@ export function ContactsClient() {
                     <td className="table-td">{contact.main_concern || "-"}</td>
                     <td className="table-td">{contact.source || "-"}</td>
                     <td className="table-td">{contact.volunteer_interest ? "Yes" : "No"}</td>
+                    <td className="table-td">{contact.book_club_member ? "Yes" : "No"}</td>
                     <td className="table-td">
                       <StatusBadge tone={contact.follow_up_needed ? "green" : "slate"}>
                         {contact.follow_up_needed ? "Needs follow-up" : "No follow-up"}
@@ -389,7 +392,7 @@ export function ContactsClient() {
                 ))
               ) : (
                 <tr>
-                  <td className="table-td" colSpan={11}>
+                  <td className="table-td" colSpan={12}>
                     No contacts match the current filters.
                   </td>
                 </tr>
