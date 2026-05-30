@@ -12,6 +12,7 @@ export type Contact = {
   message: string | null;
   volunteer_interest: boolean;
   membership_interest: boolean;
+  book_club_member: boolean;
   consent: boolean;
   follow_up_needed: boolean;
   follow_up_status: string;
