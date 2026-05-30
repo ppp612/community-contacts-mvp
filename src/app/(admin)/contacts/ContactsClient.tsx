@@ -221,6 +221,25 @@ export function ContactsClient() {
     }
   }
 
+  async function toggleBookClubMember(contact: Contact, checked: boolean) {
+    setError("");
+    const previousContacts = contacts;
+    setContacts((current) =>
+      current.map((item) => (item.id === contact.id ? { ...item, book_club_member: checked } : item))
+    );
+
+    const supabase = createClient();
+    const { error: updateError } = await supabase
+      .from("contacts")
+      .update({ book_club_member: checked })
+      .eq("id", contact.id);
+
+    if (updateError) {
+      setContacts(previousContacts);
+      setError("Could not update book club member status.");
+    }
+  }
+
   const rangeLabel = useMemo(() => {
     if (!loading && contacts.length === 0) {
       return "0 shown";
@@ -380,7 +399,20 @@ export function ContactsClient() {
                     <td className="table-td">{contact.main_concern || "-"}</td>
                     <td className="table-td">{contact.source || "-"}</td>
                     <td className="table-td">{contact.volunteer_interest ? "Yes" : "No"}</td>
-                    <td className="table-td">{contact.book_club_member ? "Yes" : "No"}</td>
+                    <td className="table-td">
+                      <label
+                        className="inline-flex items-center gap-2 text-sm font-medium text-ink"
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 accent-brand"
+                          checked={contact.book_club_member}
+                          onChange={(event) => toggleBookClubMember(contact, event.target.checked)}
+                        />
+                        {contact.book_club_member ? "Yes" : "No"}
+                      </label>
+                    </td>
                     <td className="table-td">
                       <StatusBadge tone={contact.follow_up_needed ? "green" : "slate"}>
                         {contact.follow_up_needed ? "Needs follow-up" : "No follow-up"}
