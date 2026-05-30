@@ -15,6 +15,7 @@ create table if not exists public.contacts (
   message text,
   volunteer_interest boolean default false,
   membership_interest boolean default false,
+  book_club_member boolean default false,
   consent boolean not null default false,
   follow_up_needed boolean default false,
   follow_up_status text default 'new',
@@ -32,6 +33,9 @@ add column if not exists location_detail text;
 
 alter table public.contacts
 add column if not exists address text;
+
+alter table public.contacts
+add column if not exists book_club_member boolean default false;
 
 create table if not exists public.interactions (
   id uuid primary key default gen_random_uuid(),
@@ -71,6 +75,7 @@ create index if not exists contacts_main_concern_idx on public.contacts(main_con
 create index if not exists contacts_follow_up_needed_idx on public.contacts(follow_up_needed);
 create index if not exists contacts_follow_up_status_idx on public.contacts(follow_up_status);
 create index if not exists contacts_volunteer_interest_idx on public.contacts(volunteer_interest);
+create index if not exists contacts_book_club_member_idx on public.contacts(book_club_member);
 create index if not exists contacts_follow_up_created_idx on public.contacts(follow_up_needed, created_at desc);
 create index if not exists contacts_full_name_trgm_idx on public.contacts using gin (full_name gin_trgm_ops);
 create index if not exists contacts_mobile_trgm_idx on public.contacts using gin (mobile gin_trgm_ops);
