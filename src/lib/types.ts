@@ -30,3 +30,18 @@ export type Interaction = {
   created_at: string;
   created_by: string | null;
 };
+
+export type Activity = {
+  id: string;
+  title: string;
+  activity_date: string;
+  location: string | null;
+  suburb: string | null;
+  activity_type: string | null;
+  summary: string | null;
+  follow_up_notes: string | null;
+  important: boolean;
+  created_at: string;
+  updated_at: string;
+  created_by: string | null;
+};
