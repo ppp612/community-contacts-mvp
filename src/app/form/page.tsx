@@ -2,7 +2,7 @@
 
 import { Send } from "lucide-react";
 import { FormEvent, useState } from "react";
-import { LANGUAGE_OPTIONS, MAIN_CONCERN_OPTIONS } from "@/lib/constants";
+import { LANGUAGE_OPTIONS, MAIN_CONCERN_OPTIONS, SOURCE_OPTIONS } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/browser";
 
 type UiLanguage = "en" | "zh" | "ko" | "vi";
@@ -32,6 +32,7 @@ const translations = {
     localConcernTitle: "What would you like us to know?",
     localConcernHelp: "Share a local issue, place, or idea you would like the team to understand.",
     mainConcern: "Main concern",
+    source: "How did you hear about this form?",
     nearbyLocation: "Street or nearby location, optional",
     nearbyPlaceholder: "Example: near Station Street",
     message: "Message",
@@ -66,6 +67,7 @@ const translations = {
     localConcernTitle: "有什么想让团队了解的吗？",
     localConcernHelp: "可以写下您看到的问题、具体地点，或对社区服务的建议。",
     mainConcern: "主要关注事项",
+    source: "您是通过哪里看到这个表格的？",
     nearbyLocation: "相关街道或附近地点，可选",
     nearbyPlaceholder: "例如：靠近 Station Street",
     message: "补充说明",
@@ -99,6 +101,7 @@ const translations = {
     localConcernTitle: "팀이 알아두면 좋을 내용이 있나요?",
     localConcernHelp: "지역의 불편 사항, 장소, 또는 커뮤니티에 대한 의견을 편하게 남겨 주세요.",
     mainConcern: "주요 관심 분야",
+    source: "이 양식은 어디에서 보셨나요?",
     nearbyLocation: "관련 거리 또는 가까운 장소, 선택 사항",
     nearbyPlaceholder: "예: Station Street 근처",
     message: "추가로 남기고 싶은 내용",
@@ -133,6 +136,7 @@ const translations = {
     localConcernTitle: "Có điều gì bạn muốn đội ngũ biết thêm không?",
     localConcernHelp: "Bạn có thể ghi lại vấn đề, địa điểm cụ thể hoặc góp ý về dịch vụ cộng đồng.",
     mainConcern: "Nội dung bạn quan tâm nhất",
+    source: "Bạn biết đến biểu mẫu này từ đâu?",
     nearbyLocation: "Tên đường hoặc địa điểm liên quan, không bắt buộc",
     nearbyPlaceholder: "Ví dụ: gần Station Street",
     message: "Ghi chú thêm",
@@ -239,6 +243,49 @@ const concernLabels: Record<UiLanguage, Record<string, string>> = {
   }
 };
 
+const sourceLabels: Record<UiLanguage, Record<string, string>> = {
+  en: {
+    "Meet with Residents": "Meet with Residents",
+    Facebook: "Facebook",
+    TikTok: "TikTok",
+    WeChat: "WeChat",
+    "Community Event": "Community Event",
+    "Local Business Walk": "Local Business Walk",
+    "Friend Referral": "Friend Referral",
+    Other: "Other"
+  },
+  zh: {
+    "Meet with Residents": "居民见面会",
+    Facebook: "Facebook",
+    TikTok: "TikTok",
+    WeChat: "微信",
+    "Community Event": "社区活动",
+    "Local Business Walk": "商圈走访",
+    "Friend Referral": "朋友介绍",
+    Other: "其他"
+  },
+  ko: {
+    "Meet with Residents": "주민 만남",
+    Facebook: "Facebook",
+    TikTok: "TikTok",
+    WeChat: "WeChat",
+    "Community Event": "커뮤니티 행사",
+    "Local Business Walk": "상권 방문",
+    "Friend Referral": "지인 소개",
+    Other: "기타"
+  },
+  vi: {
+    "Meet with Residents": "Gặp gỡ cư dân",
+    Facebook: "Facebook",
+    TikTok: "TikTok",
+    WeChat: "WeChat",
+    "Community Event": "Sự kiện cộng đồng",
+    "Local Business Walk": "Gặp gỡ doanh nghiệp địa phương",
+    "Friend Referral": "Bạn bè giới thiệu",
+    Other: "Khác"
+  }
+};
+
 const initialForm = {
   full_name: "",
   mobile: "",
@@ -247,6 +294,7 @@ const initialForm = {
   address: "",
   language_preference: "",
   main_concern: "",
+  source: "",
   location_detail: "",
   message: "",
   volunteer_interest: false,
@@ -286,6 +334,7 @@ export default function PublicContactFormPage() {
       address: form.address.trim() || null,
       language_preference: form.language_preference || null,
       main_concern: form.main_concern || null,
+      source: form.source || null,
       location_detail: form.location_detail.trim() || null,
       message: form.message.trim() || null,
       volunteer_interest: form.volunteer_interest,
@@ -444,6 +493,21 @@ export default function PublicContactFormPage() {
                 {MAIN_CONCERN_OPTIONS.map((option) => (
                   <option key={option} value={option}>
                     {concernLabels[uiLanguage][option]}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="space-y-2">
+              <span className="text-sm font-semibold text-slate-800">{t.source}</span>
+              <select
+                className="h-12 w-full rounded-md border border-slate-300 bg-white px-4 text-base text-slate-950 outline-none transition focus:border-slate-700 focus:ring-4 focus:ring-slate-200"
+                value={form.source}
+                onChange={(event) => updateField("source", event.target.value)}
+              >
+                <option value="">{t.select}</option>
+                {SOURCE_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {sourceLabels[uiLanguage][option]}
                   </option>
                 ))}
               </select>
