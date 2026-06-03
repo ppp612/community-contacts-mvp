@@ -3,7 +3,7 @@
 import { Download, RefreshCw, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { MAIN_CONCERN_OPTIONS, SOURCE_OPTIONS } from "@/lib/constants";
+import { FOLLOW_UP_STATUS_OPTIONS, MAIN_CONCERN_OPTIONS, SOURCE_OPTIONS } from "@/lib/constants";
 import { downloadCsv } from "@/lib/csv";
 import { createClient } from "@/lib/supabase/browser";
 import { Contact } from "@/lib/types";
@@ -67,6 +67,7 @@ type ContactsClientProps = {
   initialFilters?: {
     bookClub?: string;
     source?: string;
+    status?: string;
   };
 };
 
@@ -86,6 +87,7 @@ export function ContactsClient({ initialFilters }: ContactsClientProps) {
   const [volunteer, setVolunteer] = useState("");
   const [bookClub, setBookClub] = useState(initialFilters?.bookClub || "");
   const [followUp, setFollowUp] = useState("");
+  const [status, setStatus] = useState(initialFilters?.status || "");
   const [page, setPage] = useState(1);
   const [reloadKey, setReloadKey] = useState(0);
   const router = useRouter();
@@ -100,7 +102,7 @@ export function ContactsClient({ initialFilters }: ContactsClientProps) {
 
   useEffect(() => {
     setPage(1);
-  }, [bookClub, debouncedSearch, followUp, mainConcern, source, suburb, volunteer]);
+  }, [bookClub, debouncedSearch, followUp, mainConcern, source, status, suburb, volunteer]);
 
   useEffect(() => {
     async function loadSuburbs() {
@@ -162,6 +164,10 @@ export function ContactsClient({ initialFilters }: ContactsClientProps) {
         query = query.eq("follow_up_needed", followUp === "yes");
       }
 
+      if (status) {
+        query = query.eq("follow_up_status", status);
+      }
+
       const from = (page - 1) * PAGE_SIZE;
       const to = from + PAGE_SIZE;
       const { data, error: loadError } = await query
@@ -180,7 +186,7 @@ export function ContactsClient({ initialFilters }: ContactsClientProps) {
     }
 
     void loadContacts();
-  }, [bookClub, debouncedSearch, followUp, mainConcern, page, reloadKey, source, suburb, volunteer]);
+  }, [bookClub, debouncedSearch, followUp, mainConcern, page, reloadKey, source, status, suburb, volunteer]);
 
   async function exportFilteredContacts() {
     setExporting(true);
@@ -220,6 +226,10 @@ export function ContactsClient({ initialFilters }: ContactsClientProps) {
 
     if (followUp) {
       query = query.eq("follow_up_needed", followUp === "yes");
+    }
+
+    if (status) {
+      query = query.eq("follow_up_status", status);
     }
 
     const { data, error: exportError } = await query
@@ -300,7 +310,7 @@ export function ContactsClient({ initialFilters }: ContactsClientProps) {
       </div>
 
       <section className="panel p-4">
-        <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-8">
+        <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-9">
           <label className="space-y-2 md:col-span-3 xl:col-span-2">
             <span className="label">Search</span>
             <span className="relative block">
@@ -373,6 +383,17 @@ export function ContactsClient({ initialFilters }: ContactsClientProps) {
               <option value="">All</option>
               <option value="yes">Needed</option>
               <option value="no">Not needed</option>
+            </select>
+          </label>
+          <label className="space-y-2">
+            <span className="label">Status</span>
+            <select className="input" value={status} onChange={(event) => setStatus(event.target.value)}>
+              <option value="">All</option>
+              {FOLLOW_UP_STATUS_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
             </select>
           </label>
         </div>
