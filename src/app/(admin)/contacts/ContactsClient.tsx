@@ -63,7 +63,14 @@ function StatusBadge({ children, tone = "slate" }: { children: React.ReactNode; 
   );
 }
 
-export function ContactsClient() {
+type ContactsClientProps = {
+  initialFilters?: {
+    bookClub?: string;
+    source?: string;
+  };
+};
+
+export function ContactsClient({ initialFilters }: ContactsClientProps) {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [suburbs, setSuburbs] = useState<string[]>([]);
   const [hasNextPage, setHasNextPage] = useState(false);
@@ -74,9 +81,10 @@ export function ContactsClient() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [suburb, setSuburb] = useState("");
-  const [source, setSource] = useState("");
+  const [source, setSource] = useState(initialFilters?.source || "");
   const [mainConcern, setMainConcern] = useState("");
   const [volunteer, setVolunteer] = useState("");
+  const [bookClub, setBookClub] = useState(initialFilters?.bookClub || "");
   const [followUp, setFollowUp] = useState("");
   const [page, setPage] = useState(1);
   const [reloadKey, setReloadKey] = useState(0);
@@ -92,7 +100,7 @@ export function ContactsClient() {
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, followUp, mainConcern, source, suburb, volunteer]);
+  }, [bookClub, debouncedSearch, followUp, mainConcern, source, suburb, volunteer]);
 
   useEffect(() => {
     async function loadSuburbs() {
@@ -132,7 +140,9 @@ export function ContactsClient() {
         query = query.eq("suburb", suburb);
       }
 
-      if (source) {
+      if (source === "__not_specified") {
+        query = query.is("source", null);
+      } else if (source) {
         query = query.eq("source", source);
       }
 
@@ -142,6 +152,10 @@ export function ContactsClient() {
 
       if (volunteer) {
         query = query.eq("volunteer_interest", volunteer === "yes");
+      }
+
+      if (bookClub) {
+        query = query.eq("book_club_member", bookClub === "yes");
       }
 
       if (followUp) {
@@ -166,7 +180,7 @@ export function ContactsClient() {
     }
 
     void loadContacts();
-  }, [debouncedSearch, followUp, mainConcern, page, reloadKey, source, suburb, volunteer]);
+  }, [bookClub, debouncedSearch, followUp, mainConcern, page, reloadKey, source, suburb, volunteer]);
 
   async function exportFilteredContacts() {
     setExporting(true);
@@ -186,7 +200,9 @@ export function ContactsClient() {
       query = query.eq("suburb", suburb);
     }
 
-    if (source) {
+    if (source === "__not_specified") {
+      query = query.is("source", null);
+    } else if (source) {
       query = query.eq("source", source);
     }
 
@@ -196,6 +212,10 @@ export function ContactsClient() {
 
     if (volunteer) {
       query = query.eq("volunteer_interest", volunteer === "yes");
+    }
+
+    if (bookClub) {
+      query = query.eq("book_club_member", bookClub === "yes");
     }
 
     if (followUp) {
@@ -280,8 +300,8 @@ export function ContactsClient() {
       </div>
 
       <section className="panel p-4">
-        <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-6">
-          <label className="space-y-2 md:col-span-3 lg:col-span-2">
+        <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-8">
+          <label className="space-y-2 md:col-span-3 xl:col-span-2">
             <span className="label">Search</span>
             <span className="relative block">
               <Search aria-hidden="true" className="absolute left-3 top-2.5 h-4 w-4 text-muted" />
@@ -308,6 +328,7 @@ export function ContactsClient() {
             <span className="label">Source</span>
             <select className="input" value={source} onChange={(event) => setSource(event.target.value)}>
               <option value="">All</option>
+              <option value="__not_specified">Not specified</option>
               {SOURCE_OPTIONS.map((option) => (
                 <option key={option} value={option}>
                   {option}
@@ -336,6 +357,14 @@ export function ContactsClient() {
               <option value="">All</option>
               <option value="yes">Yes</option>
               <option value="no">No</option>
+            </select>
+          </label>
+          <label className="space-y-2">
+            <span className="label">Book Club</span>
+            <select className="input" value={bookClub} onChange={(event) => setBookClub(event.target.value)}>
+              <option value="">All</option>
+              <option value="yes">Members</option>
+              <option value="no">Not members</option>
             </select>
           </label>
           <label className="space-y-2">
