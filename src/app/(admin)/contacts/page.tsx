@@ -3,6 +3,7 @@ import { ContactsClient } from "./ContactsClient";
 type ContactsSearchParams = {
   bookClub?: string | string[];
   source?: string | string[];
+  status?: string | string[];
 };
 
 function firstParam(value: string | string[] | undefined) {
@@ -20,7 +21,8 @@ export default async function ContactsPage({
     <ContactsClient
       initialFilters={{
         bookClub: firstParam(params.bookClub),
-        source: firstParam(params.source)
+        source: firstParam(params.source),
+        status: firstParam(params.status)
       }}
     />
   );
