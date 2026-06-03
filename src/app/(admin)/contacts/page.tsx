@@ -1,5 +1,27 @@
 import { ContactsClient } from "./ContactsClient";
 
-export default function ContactsPage() {
-  return <ContactsClient />;
+type ContactsSearchParams = {
+  bookClub?: string | string[];
+  source?: string | string[];
+};
+
+function firstParam(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] || "" : value || "";
+}
+
+export default async function ContactsPage({
+  searchParams
+}: {
+  searchParams?: Promise<ContactsSearchParams>;
+}) {
+  const params = searchParams ? await searchParams : {};
+
+  return (
+    <ContactsClient
+      initialFilters={{
+        bookClub: firstParam(params.bookClub),
+        source: firstParam(params.source)
+      }}
+    />
+  );
 }
