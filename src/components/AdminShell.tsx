@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, ListChecks, LogOut, Users } from "lucide-react";
+import { BarChart3, CalendarDays, ListChecks, LogOut, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
@@ -8,7 +8,8 @@ import { createClient } from "@/lib/supabase/browser";
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
   { href: "/follow-ups", label: "Follow-ups", icon: ListChecks },
-  { href: "/contacts", label: "Contacts", icon: Users }
+  { href: "/contacts", label: "Contacts", icon: Users },
+  { href: "/activities", label: "Activities", icon: CalendarDays }
 ];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
