@@ -1,6 +1,7 @@
 import { StatCard } from "@/components/StatCard";
 import { Contact } from "@/lib/types";
 import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,11 @@ function topEntries(groups: Record<string, number>) {
   return Object.entries(groups)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 8);
+}
+
+function sourceHref(label: string) {
+  const value = label === "Not specified" ? "__not_specified" : label;
+  return `/contacts?source=${encodeURIComponent(value)}`;
 }
 
 export default async function DashboardPage() {
@@ -84,10 +90,14 @@ export default async function DashboardPage() {
           <div className="mt-4 space-y-3">
             {sourceCounts.length > 0 ? (
               sourceCounts.map(([label, count]) => (
-                <div key={label} className="flex items-center justify-between border-b border-line pb-2 text-sm">
+                <Link
+                  key={label}
+                  href={sourceHref(label)}
+                  className="flex items-center justify-between border-b border-line pb-2 text-sm transition hover:text-brand"
+                >
                   <span className="font-medium text-ink">{label}</span>
                   <span className="text-muted">{count}</span>
-                </div>
+                </Link>
               ))
             ) : (
               <p className="text-sm text-muted">No contacts yet.</p>
