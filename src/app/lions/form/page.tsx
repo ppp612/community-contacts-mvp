@@ -552,7 +552,7 @@ export default function LionsMemberFormPage() {
                       <div className="grid gap-5 sm:grid-cols-2">
                         <Field label={text.mobile} required>
                           <input
-                            className="input min-h-12 text-base"
+                            className="input min-h-12 min-w-0 max-w-full text-base"
                             type="tel"
                             inputMode="tel"
                             value={form.mobile}
@@ -664,7 +664,7 @@ export default function LionsMemberFormPage() {
                       <div className="grid gap-5 sm:grid-cols-2">
                         <Field label={text.birthDate} required>
                           <input
-                            className="input min-h-12 text-base"
+                            className="input min-h-12 min-w-0 max-w-full text-base"
                             type="date"
                             value={form.birth_date}
                             onChange={(event) => update("birth_date", event.target.value)}
@@ -818,7 +818,7 @@ function FormSection({
   return (
     <section
       id={id}
-      className="scroll-mt-4 space-y-6 py-7 sm:py-8 [&_.input]:rounded-lg [&_.input]:border-[#cbd4cc] [&_.input]:bg-[#f8faf7] [&_.input]:px-4 [&_.input]:py-3 [&_.input]:text-[#263029] [&_.input]:placeholder:text-[#7c867e] [&_.input]:focus:border-[#285c4d] [&_.input]:focus:ring-[#285c4d]/15"
+      className="min-w-0 scroll-mt-4 space-y-6 py-7 sm:py-8 [&_.input]:min-w-0 [&_.input]:max-w-full [&_.input]:rounded-lg [&_.input]:border-[#cbd4cc] [&_.input]:bg-[#f8faf7] [&_.input]:px-4 [&_.input]:py-3 [&_.input]:text-[#263029] [&_.input]:placeholder:text-[#7c867e] [&_.input]:focus:border-[#285c4d] [&_.input]:focus:ring-[#285c4d]/15"
     >
       <div>
         <h2 className="text-[1.45rem] font-bold leading-tight text-[#202620]">{title}</h2>
@@ -841,7 +841,7 @@ function Field({
   required?: boolean;
 }) {
   return (
-    <label className="block">
+    <label className="block min-w-0">
       <span className="mb-2 block text-sm font-semibold text-[#37423a]">
         {label}{" "}
         {required ? (
