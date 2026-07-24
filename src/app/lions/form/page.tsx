@@ -121,6 +121,7 @@ const copy = {
     submit: "Submit",
     submitting: "Submitting...",
     contactError: "Mobile and email are required.",
+    addressError: "Complete the postal address.",
     nameError: "First and last name are required.",
     emailError: "Enter a valid email address.",
     consentError: "Please confirm before submitting.",
@@ -185,6 +186,7 @@ const copy = {
     submit: "提交",
     submitting: "正在提交...",
     contactError: "请填写手机和邮箱。",
+    addressError: "请填写完整通讯地址。",
     nameError: "请填写英文名和英文姓氏。",
     emailError: "请输入有效邮箱。",
     consentError: "请勾选同意。",
@@ -208,22 +210,14 @@ export default function LionsMemberFormPage() {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
   const text = copy[language];
-  const optionalStepHasData =
-    step === 3
-      ? Boolean(
-          form.address_line_1 ||
-            form.address_line_2 ||
-            form.suburb ||
-            form.postal_code
-        )
-      : Boolean(
-          form.birth_date ||
-            form.gender ||
-            form.occupation ||
-            form.spouse_name ||
-            form.sponsor_name ||
-            form.additional_notes
-        );
+  const optionalStepHasData = Boolean(
+    form.birth_date ||
+      form.gender ||
+      form.occupation ||
+      form.spouse_name ||
+      form.sponsor_name ||
+      form.additional_notes
+  );
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -266,6 +260,18 @@ export default function LionsMemberFormPage() {
       return;
     }
 
+    if (
+      step === 3 &&
+      (!form.address_line_1.trim() ||
+        !form.suburb.trim() ||
+        !form.state_province.trim() ||
+        !form.postal_code.trim() ||
+        !form.country.trim())
+    ) {
+      setError(text.addressError);
+      return;
+    }
+
     goToStep(Math.min(5, step + 1));
   }
 
@@ -290,6 +296,19 @@ export default function LionsMemberFormPage() {
     if (!emailIsValid(form.preferred_email.trim()) || !emailIsValid(form.alternate_email.trim())) {
       setStep(2);
       setError(text.emailError);
+      scrollToForm();
+      return;
+    }
+
+    if (
+      !form.address_line_1.trim() ||
+      !form.suburb.trim() ||
+      !form.state_province.trim() ||
+      !form.postal_code.trim() ||
+      !form.country.trim()
+    ) {
+      setStep(3);
+      setError(text.addressError);
       scrollToForm();
       return;
     }
@@ -567,13 +586,14 @@ export default function LionsMemberFormPage() {
                     <FormSection title={text.address} hint={text.addressHint}>
                       <div className="grid gap-5 sm:grid-cols-2">
                         <div className="sm:col-span-2">
-                          <Field label={text.address1} optional={text.optional}>
+                          <Field label={text.address1} required>
                             <input
                               className="input min-h-12 text-base"
                               value={form.address_line_1}
                               onChange={(event) => update("address_line_1", event.target.value)}
                               autoComplete="address-line1"
                               enterKeyHint="next"
+                              required
                             />
                           </Field>
                         </div>
@@ -588,25 +608,27 @@ export default function LionsMemberFormPage() {
                             />
                           </Field>
                         </div>
-                        <Field label={text.suburb} optional={text.optional}>
+                        <Field label={text.suburb} required>
                           <input
                             className="input min-h-12 text-base"
                             value={form.suburb}
                             onChange={(event) => update("suburb", event.target.value)}
                             autoComplete="address-level2"
                             enterKeyHint="next"
+                            required
                           />
                         </Field>
-                        <Field label={text.state} optional={text.optional}>
+                        <Field label={text.state} required>
                           <input
                             className="input min-h-12 text-base"
                             value={form.state_province}
                             onChange={(event) => update("state_province", event.target.value)}
                             autoComplete="address-level1"
                             enterKeyHint="next"
+                            required
                           />
                         </Field>
-                        <Field label={text.postalCode} optional={text.optional}>
+                        <Field label={text.postalCode} required>
                           <input
                             className="input min-h-12 text-base"
                             inputMode="numeric"
@@ -614,15 +636,17 @@ export default function LionsMemberFormPage() {
                             onChange={(event) => update("postal_code", event.target.value)}
                             autoComplete="postal-code"
                             enterKeyHint="next"
+                            required
                           />
                         </Field>
-                        <Field label={text.country} optional={text.optional}>
+                        <Field label={text.country} required>
                           <input
                             className="input min-h-12 text-base"
                             value={form.country}
                             onChange={(event) => update("country", event.target.value)}
                             autoComplete="country-name"
                             enterKeyHint="done"
+                            required
                           />
                         </Field>
                       </div>
@@ -747,9 +771,7 @@ export default function LionsMemberFormPage() {
                       className="inline-flex min-h-14 items-center justify-center gap-2 rounded-lg bg-[#285c4d] px-4 text-base font-semibold text-white shadow-[0_8px_20px_rgba(40,92,77,0.18)] transition hover:bg-[#204b3f] active:translate-y-px"
                       onClick={continueToNextStep}
                     >
-                      {(step === 3 || step === 4) && !optionalStepHasData
-                        ? text.skip
-                        : text.continue}
+                      {step === 4 && !optionalStepHasData ? text.skip : text.continue}
                       <ArrowRight aria-hidden="true" className="h-5 w-5" />
                     </button>
                   ) : (
