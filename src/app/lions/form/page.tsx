@@ -380,16 +380,16 @@ export default function LionsMemberFormPage() {
           id="lions-form-card"
           className="scroll-mt-3 overflow-hidden rounded-lg border border-[#dbe1da] bg-[#fcfdfb] shadow-[0_18px_50px_rgba(38,55,43,0.09)]"
         >
-          <div className="flex min-h-16 items-center justify-between gap-3 border-b border-[#e1e6e0] px-4 sm:px-8">
+          <div className="flex flex-col items-stretch gap-3 border-b border-[#e1e6e0] px-4 py-4 sm:min-h-16 sm:flex-row sm:items-center sm:justify-between sm:py-0 sm:px-8">
             <div className="flex min-w-0 items-center gap-3">
               <span aria-hidden="true" className="h-8 w-1.5 shrink-0 rounded-sm bg-[#285c4d]" />
-              <span className="truncate text-sm font-bold text-[#26342c] sm:text-base">
+              <span className="text-sm font-bold leading-5 text-[#26342c] sm:text-base">
                 {text.clubName}
               </span>
             </div>
 
             <div
-              className="inline-flex shrink-0 items-center rounded-lg border border-[#d3dad3] bg-[#f3f5f2] p-1"
+              className="inline-flex shrink-0 self-end items-center rounded-lg border border-[#d3dad3] bg-[#f3f5f2] p-1 sm:self-auto"
               aria-label={text.language}
             >
               <Languages aria-hidden="true" className="mx-2 hidden h-4 w-4 text-[#6c766e] sm:block" />
