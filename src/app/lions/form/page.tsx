@@ -65,7 +65,7 @@ const initialForm: FormState = {
 
 const copy = {
   en: {
-    clubName: "Lions Club",
+    clubName: "Sydney Chinese Business Lions Club",
     title: "Member details",
     subtitle: "",
     language: "Language",
@@ -130,7 +130,7 @@ const copy = {
     another: "New form"
   },
   zh: {
-    clubName: "狮子会",
+    clubName: "悉尼华商狮子会",
     title: "会员资料",
     subtitle: "",
     language: "语言",
