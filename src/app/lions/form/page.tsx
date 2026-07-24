@@ -84,7 +84,7 @@ const copy = {
     back: "Back",
     skip: "Skip and continue",
     contact: "How can we reach you?",
-    contactHint: "A mobile number or email is enough.",
+    contactHint: "Please add both your mobile number and email.",
     address: "Your postal address",
     addressHint: "Skip this if you don't have it handy.",
     profile: "Anything else?",
@@ -120,7 +120,7 @@ const copy = {
       "These details are correct, and I'm happy for the club to use them for membership records and club updates.",
     submit: "Send my details",
     submitting: "Submitting...",
-    contactError: "Add a mobile number or email so we can reach you.",
+    contactError: "Please add both your mobile number and email.",
     nameError: "Please add your first and last name.",
     emailError: "Please enter a valid email address.",
     consentError: "Please tick the box before sending your details.",
@@ -149,7 +149,7 @@ const copy = {
     back: "上一步",
     skip: "跳过并继续",
     contact: "我们怎么联系您？",
-    contactHint: "手机或邮箱填一项就可以。",
+    contactHint: "请填写手机和邮箱，方便我们联系您。",
     address: "通讯地址",
     addressHint: "手边没有也可以先跳过。",
     profile: "还有想补充的吗？",
@@ -184,7 +184,7 @@ const copy = {
     consent: "以上资料无误，我同意本会将这些资料用于会员档案和会务联系。",
     submit: "提交资料",
     submitting: "正在提交...",
-    contactError: "请填写手机或邮箱，方便我们联系您。",
+    contactError: "请把手机和邮箱都填写完整。",
     nameError: "请填写英文名和英文姓氏。",
     emailError: "请填写有效的邮箱地址。",
     consentError: "提交前请先勾选确认。",
@@ -253,7 +253,7 @@ export default function LionsMemberFormPage() {
       return;
     }
 
-    if (step === 2 && !form.mobile.trim() && !form.preferred_email.trim()) {
+    if (step === 2 && (!form.mobile.trim() || !form.preferred_email.trim())) {
       setError(text.contactError);
       return;
     }
@@ -280,7 +280,7 @@ export default function LionsMemberFormPage() {
       return;
     }
 
-    if (!form.mobile.trim() && !form.preferred_email.trim()) {
+    if (!form.mobile.trim() || !form.preferred_email.trim()) {
       setStep(2);
       setError(text.contactError);
       scrollToForm();
@@ -523,7 +523,7 @@ export default function LionsMemberFormPage() {
                 {step === 2 ? (
                     <FormSection id="member-contact" title={text.contact} hint={text.contactHint}>
                       <div className="grid gap-5 sm:grid-cols-2">
-                        <Field label={text.mobile}>
+                        <Field label={text.mobile} required>
                           <input
                             className="input min-h-12 text-base"
                             type="tel"
@@ -532,9 +532,10 @@ export default function LionsMemberFormPage() {
                             onChange={(event) => update("mobile", event.target.value)}
                             autoComplete="tel"
                             enterKeyHint="next"
+                            required
                           />
                         </Field>
-                        <Field label={text.preferredEmail}>
+                        <Field label={text.preferredEmail} required>
                           <input
                             className="input min-h-12 text-base"
                             type="email"
@@ -543,6 +544,7 @@ export default function LionsMemberFormPage() {
                             onChange={(event) => update("preferred_email", event.target.value)}
                             autoComplete="email"
                             enterKeyHint="next"
+                            required
                           />
                         </Field>
                         <Field label={text.alternateEmail} optional={text.optional}>
