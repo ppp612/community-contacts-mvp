@@ -46,6 +46,7 @@ type ContactEditForm = {
   message: string;
   volunteer_interest: boolean;
   membership_interest: boolean;
+  book_club_member: boolean;
 };
 
 const emptyContactForm: ContactEditForm = {
@@ -60,7 +61,8 @@ const emptyContactForm: ContactEditForm = {
   source: "",
   message: "",
   volunteer_interest: false,
-  membership_interest: false
+  membership_interest: false,
+  book_club_member: false
 };
 
 export function ContactDetailClient({ contactId }: { contactId: string }) {
@@ -119,7 +121,8 @@ export function ContactDetailClient({ contactId }: { contactId: string }) {
       source: loadedContact.source || "",
       message: loadedContact.message || "",
       volunteer_interest: loadedContact.volunteer_interest,
-      membership_interest: loadedContact.membership_interest
+      membership_interest: loadedContact.membership_interest,
+      book_club_member: loadedContact.book_club_member || false
     });
     setNotes(loadedContact.notes || "");
     setFollowUpNeeded(loadedContact.follow_up_needed);
@@ -161,6 +164,7 @@ export function ContactDetailClient({ contactId }: { contactId: string }) {
         message: contactForm.message.trim() || null,
         volunteer_interest: contactForm.volunteer_interest,
         membership_interest: contactForm.membership_interest,
+        book_club_member: contactForm.book_club_member,
         notes: notes.trim() || null,
         follow_up_needed: followUpNeeded,
         follow_up_status: followUpStatus
@@ -509,6 +513,15 @@ export function ContactDetailClient({ contactId }: { contactId: string }) {
                 onChange={(event) => updateContactField("membership_interest", event.target.checked)}
               />
               Community network interested
+            </label>
+            <label className="flex items-center gap-3 rounded-md border border-line bg-panel p-3 text-sm font-medium text-ink">
+              <input
+                type="checkbox"
+                className="h-4 w-4 accent-brand"
+                checked={contactForm.book_club_member}
+                onChange={(event) => updateContactField("book_club_member", event.target.checked)}
+              />
+              Book club member
             </label>
             <DetailItem label="Consent" value={contact.consent ? "Confirmed" : "Not confirmed"} />
             <DetailItem label="Follow-up Status" value={contact.follow_up_status} />
