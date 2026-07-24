@@ -45,3 +45,32 @@ export type Activity = {
   updated_at: string;
   created_by: string | null;
 };
+
+export type LionMemberSubmission = {
+  id: string;
+  participant_type: "current_member" | "interested_in_joining" | "activity_guest";
+  first_name: string;
+  middle_name: string | null;
+  last_name: string;
+  local_name: string | null;
+  nickname: string | null;
+  mobile: string | null;
+  preferred_email: string | null;
+  alternate_email: string | null;
+  address_line_1: string | null;
+  address_line_2: string | null;
+  suburb: string | null;
+  state_province: string | null;
+  postal_code: string | null;
+  country: string | null;
+  birth_date: string | null;
+  gender: string | null;
+  occupation: string | null;
+  spouse_name: string | null;
+  sponsor_name: string | null;
+  additional_notes: string | null;
+  consent: boolean;
+  review_status: "new" | "reviewed" | "exported";
+  created_at: string;
+  updated_at: string;
+};
