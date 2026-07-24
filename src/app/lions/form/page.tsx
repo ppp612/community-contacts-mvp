@@ -1,6 +1,13 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, CheckCircle2, Languages, LoaderCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  ChevronDown,
+  Languages,
+  LoaderCircle
+} from "lucide-react";
 import { FormEvent, useState } from "react";
 import { createClient } from "@/lib/supabase/browser";
 
@@ -58,41 +65,42 @@ const initialForm: FormState = {
 
 const copy = {
   en: {
-    eyebrow: "Club contact form",
-    title: "Lions Club details and interest form",
-    subtitle: "Share or update your details so the club can keep in touch and maintain accurate records.",
+    clubName: "Lions Club",
+    title: "Good to see you",
+    subtitle: "Take a minute to check your details, or tell us if you'd like to get involved.",
     language: "Language",
     required: "Required",
     optional: "Optional",
-    identity: "Your name",
-    identityHint: "Please enter your name as you would like it recorded.",
-    relationship: "Your connection with the club",
-    relationshipHint: "Choose the option that best describes you.",
-    relationshipLabel: "I am...",
-    currentMember: "A current Lions Club member",
-    interestedJoining: "Interested in joining the Lions Club",
-    activityGuest: "Interested in attending club activities",
-    stepNames: ["About you", "Contact", "Address", "Optional details", "Confirm"],
+    requiredHint: "Fields marked * are required.",
+    identity: "A little about you",
+    identityHint: "Use the name you normally go by.",
+    relationshipLabel: "What brings you here?",
+    currentMember: "I'm a member updating my details",
+    interestedJoining: "I'd like to learn about joining",
+    activityGuest: "I'd like to hear about club activities",
+    stepNames: ["About you", "How to reach you", "Postal address", "A few extras", "Final check"],
+    progress: (step: number) => `${step} of 5`,
     continue: "Continue",
     back: "Back",
-    skip: "Skip for now",
-    contact: "Contact details",
-    contactHint: "Please provide at least a mobile number or preferred email.",
-    address: "Mailing address",
-    profile: "Additional details",
-    profileHint: "These details are optional. Leave anything you are unsure about blank.",
+    skip: "Skip and continue",
+    contact: "How can we reach you?",
+    contactHint: "A mobile number or email is enough.",
+    address: "Your postal address",
+    addressHint: "Skip this if you don't have it handy.",
+    profile: "Anything else?",
+    profileHint: "Only fill in what feels useful.",
     firstName: "First name",
     middleName: "Middle name",
     lastName: "Last name",
-    localName: "Chinese or local-language name",
-    nickname: "Preferred name or nickname",
+    localName: "Name in another language",
+    nickname: "Name you like to be called",
     mobile: "Mobile",
-    preferredEmail: "Preferred email",
+    preferredEmail: "Email",
     alternateEmail: "Alternate email",
-    address1: "Address line 1",
-    address2: "Address line 2",
-    suburb: "Suburb / City",
-    state: "State / Province",
+    address1: "Street address",
+    address2: "Apartment, unit or building",
+    suburb: "Suburb or city",
+    state: "State or province",
     postalCode: "Postcode",
     country: "Country",
     birthDate: "Date of birth",
@@ -105,58 +113,59 @@ const copy = {
     other: "Other",
     occupation: "Occupation",
     spouse: "Spouse or partner name",
-    sponsor: "Sponsor / referring member",
-    notes: "Anything else we should correct or know?",
-    consentTitle: "Confirmation and consent",
+    sponsor: "Who introduced you to the club?",
+    notes: "Is there anything we should add or correct?",
+    consentTitle: "One last check",
     consent:
-      "I confirm these details are accurate and consent to the club using them to update and manage my membership record and contact me about club matters.",
-    submit: "Submit my details",
+      "These details are correct, and I'm happy for the club to use them for membership records and club updates.",
+    submit: "Send my details",
     submitting: "Submitting...",
-    contactError: "Please provide at least a mobile number or preferred email.",
-    nameError: "Please enter your first name and last name.",
+    contactError: "Add a mobile number or email so we can reach you.",
+    nameError: "Please add your first and last name.",
     emailError: "Please enter a valid email address.",
-    consentError: "Please confirm the consent statement before submitting.",
-    generalError: "We could not submit your details. Please check your connection and try again.",
-    thankYou: "Thank you",
-    success: "Your details have been submitted for the club to review.",
-    another: "Submit another response"
+    consentError: "Please tick the box before sending your details.",
+    generalError: "That didn't go through. Check your connection and try again.",
+    thankYou: "You're all set",
+    success: "Thanks, we've received your details.",
+    another: "Add another person"
   },
   zh: {
-    eyebrow: "联系资料",
-    title: "狮子会资料确认与活动意向",
-    subtitle: "请留下或更新您的资料，方便本会完善记录，并与您保持联系。",
+    clubName: "狮子会",
+    title: "很高兴见到您",
+    subtitle: "花一分钟核对资料。想加入或参加活动，也可以直接填写。",
     language: "语言",
     required: "必填",
     optional: "选填",
-    identity: "姓名资料",
-    identityHint: "请按您希望在会员档案中显示的方式填写。",
-    relationship: "您与狮子会的关系",
-    relationshipHint: "请选择最符合您目前情况的一项。",
-    relationshipLabel: "我的情况是",
-    currentMember: "现有狮子会会员",
-    interestedJoining: "有意加入狮子会",
-    activityGuest: "有兴趣参加狮子会活动",
-    stepNames: ["基本资料", "联系方式", "通讯地址", "选填资料", "确认提交"],
+    requiredHint: "带 * 的项目需要填写。",
+    identity: "先认识一下",
+    identityHint: "请填写您平时使用的姓名。",
+    relationshipLabel: "您这次想填写哪类资料？",
+    currentMember: "我是会员，想更新资料",
+    interestedJoining: "我想了解如何加入",
+    activityGuest: "我想参加狮子会活动",
+    stepNames: ["关于您", "怎么联系", "通讯地址", "补充资料", "确认一下"],
+    progress: (step: number) => `共 5 项，第 ${step} 项`,
     continue: "下一步",
     back: "上一步",
-    skip: "暂时跳过",
-    contact: "联系方式",
-    contactHint: "手机号码和常用邮箱至少填写一项。",
+    skip: "跳过并继续",
+    contact: "我们怎么联系您？",
+    contactHint: "手机或邮箱填一项就可以。",
     address: "通讯地址",
-    profile: "其他资料",
-    profileHint: "以下内容均为选填，不确定的项目可以留空。",
+    addressHint: "手边没有也可以先跳过。",
+    profile: "还有想补充的吗？",
+    profileHint: "这些都不是必填，方便的内容再填。",
     firstName: "英文名",
     middleName: "英文中间名",
     lastName: "英文姓氏",
     localName: "中文姓名或本地语言姓名",
-    nickname: "常用名或昵称",
+    nickname: "平时怎么称呼您",
     mobile: "手机号码",
     preferredEmail: "常用邮箱",
     alternateEmail: "备用邮箱",
-    address1: "地址第一行",
-    address2: "地址第二行",
-    suburb: "城区 / 城市",
-    state: "州 / 省",
+    address1: "街道地址",
+    address2: "公寓、单元或楼名",
+    suburb: "城区或城市",
+    state: "州或省",
     postalCode: "邮编",
     country: "国家",
     birthDate: "出生日期",
@@ -169,20 +178,20 @@ const copy = {
     other: "其他",
     occupation: "职业",
     spouse: "配偶或伴侣姓名",
-    sponsor: "推荐人",
-    notes: "还有哪些资料需要更正或补充？",
-    consentTitle: "资料确认与同意",
-    consent: "本人确认以上资料准确，并同意本会将这些资料用于更新及管理会员档案，以及联系本人处理会务事宜。",
-    submit: "提交会员资料",
+    sponsor: "是谁介绍您认识本会的？",
+    notes: "有需要补充或更正的吗？",
+    consentTitle: "最后确认一下",
+    consent: "以上资料无误，我同意本会将这些资料用于会员档案和会务联系。",
+    submit: "提交资料",
     submitting: "正在提交...",
-    contactError: "请至少填写手机号码或常用邮箱。",
+    contactError: "请填写手机或邮箱，方便我们联系您。",
     nameError: "请填写英文名和英文姓氏。",
     emailError: "请填写有效的邮箱地址。",
-    consentError: "提交前请勾选资料确认与同意。",
-    generalError: "资料未能提交，请检查网络后再试一次。",
-    thankYou: "谢谢您",
-    success: "您的资料已提交，本会稍后会进行核对。",
-    another: "继续填写另一份资料"
+    consentError: "提交前请先勾选确认。",
+    generalError: "刚才没有提交成功，请检查网络后再试。",
+    thankYou: "资料已经收到",
+    success: "谢谢，您的资料已经提交。",
+    another: "再填一份"
   }
 } as const;
 
@@ -340,82 +349,108 @@ export default function LionsMemberFormPage() {
   }
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-slate-100 px-3 py-3 text-slate-900 sm:px-6 sm:py-10">
-      <div className="mx-auto max-w-3xl">
-        <div className="mb-3 flex justify-end sm:mb-4">
-          <div
-            className="inline-flex rounded-md border border-slate-300 bg-white p-1 shadow-sm"
-            aria-label={text.language}
-          >
-            <Languages aria-hidden="true" className="mx-2 my-auto h-4 w-4 text-slate-500" />
-            {(["en", "zh"] as const).map((option) => (
-              <button
-                key={option}
-                type="button"
-                onClick={() => {
-                  setLanguage(option);
-                  setError("");
-                }}
-                aria-pressed={language === option}
-                className={`min-h-11 rounded px-4 text-sm font-semibold transition ${
-                  language === option ? "bg-slate-900 text-white" : "text-slate-700 hover:bg-slate-100"
-                }`}
-              >
-                {option === "en" ? "English" : "中文"}
-              </button>
-            ))}
-          </div>
-        </div>
-
+    <main className="min-h-[100dvh] overflow-x-hidden bg-[#eef1ed] px-3 py-3 text-[#202620] sm:px-6 sm:py-10">
+      <div className="mx-auto max-w-[46rem]">
         <div
           id="lions-form-card"
-          className="scroll-mt-3 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm"
+          className="scroll-mt-3 overflow-hidden rounded-lg border border-[#dbe1da] bg-[#fcfdfb] shadow-[0_18px_50px_rgba(38,55,43,0.09)]"
         >
-          <div className="border-t-4 border-amber-400 px-4 py-6 sm:px-9 sm:py-9">
-            {submitted ? (
-              <div className="flex min-h-[70vh] flex-col items-center justify-center py-10 text-center sm:min-h-[420px]">
-                <CheckCircle2 aria-hidden="true" className="h-14 w-14 text-emerald-600" />
-                <h1 className="mt-5 text-3xl font-semibold">{text.thankYou}</h1>
-                <p className="mt-3 max-w-md text-base leading-7 text-slate-600">{text.success}</p>
-                <button type="button" className="button-secondary mt-8 min-h-12 w-full sm:w-auto" onClick={resetForm}>
-                  {text.another}
+          <div className="flex min-h-16 items-center justify-between gap-3 border-b border-[#e1e6e0] px-4 sm:px-8">
+            <div className="flex min-w-0 items-center gap-3">
+              <span aria-hidden="true" className="h-8 w-1.5 shrink-0 rounded-sm bg-[#285c4d]" />
+              <span className="truncate text-sm font-bold text-[#26342c] sm:text-base">
+                {text.clubName}
+              </span>
+            </div>
+
+            <div
+              className="inline-flex shrink-0 items-center rounded-lg border border-[#d3dad3] bg-[#f3f5f2] p-1"
+              aria-label={text.language}
+            >
+              <Languages aria-hidden="true" className="mx-2 hidden h-4 w-4 text-[#6c766e] sm:block" />
+              {(["en", "zh"] as const).map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => {
+                    setLanguage(option);
+                    setError("");
+                  }}
+                  aria-pressed={language === option}
+                  className={`min-h-10 rounded-md px-3 text-sm font-semibold transition active:translate-y-px ${
+                    language === option
+                      ? "bg-[#285c4d] text-white shadow-sm"
+                      : "text-[#59645c] hover:bg-white"
+                  }`}
+                >
+                  {option === "en" ? "English" : "中文"}
                 </button>
-              </div>
-            ) : (
-              <>
-                <header className="pb-6">
-                  <p className="text-xs font-semibold uppercase text-blue-800 sm:text-sm">{text.eyebrow}</p>
-                  <h1 className="mt-2 text-2xl font-semibold leading-tight sm:text-4xl">{text.title}</h1>
-                  <p className="mt-3 max-w-2xl text-base leading-7 text-slate-600">{text.subtitle}</p>
-                  <p className="mt-3 text-sm text-slate-500">
-                    <span className="text-red-700">*</span> {text.required}
+              ))}
+            </div>
+          </div>
+
+          {submitted ? (
+            <div className="flex min-h-[calc(100dvh-5.5rem)] flex-col items-center justify-center px-5 py-12 text-center sm:min-h-[480px] sm:px-10">
+              <span className="flex h-16 w-16 items-center justify-center rounded-lg bg-[#285c4d] text-white shadow-[0_10px_28px_rgba(40,92,77,0.2)]">
+                <Check aria-hidden="true" className="h-8 w-8" strokeWidth={2.5} />
+              </span>
+              <h1 className="mt-6 text-3xl font-bold leading-tight text-[#202620] sm:text-4xl">
+                {text.thankYou}
+              </h1>
+              <p className="mt-3 max-w-sm text-base leading-7 text-[#647067]">{text.success}</p>
+              <button
+                type="button"
+                className="mt-8 min-h-[52px] w-full rounded-lg border border-[#bdc8bf] bg-white px-5 text-base font-semibold text-[#285c4d] transition hover:bg-[#f4f7f4] active:translate-y-px sm:w-auto"
+                onClick={resetForm}
+              >
+                {text.another}
+              </button>
+            </div>
+          ) : (
+            <div className="px-5 pb-6 pt-7 sm:px-9 sm:pb-9 sm:pt-9">
+              <header>
+                <h1 className="max-w-xl text-[2rem] font-bold leading-[1.12] text-[#202620] sm:text-[2.65rem]">
+                  {text.title}
+                </h1>
+                <p className="mt-3 max-w-xl text-base leading-7 text-[#647067] sm:text-[1.05rem]">
+                  {text.subtitle}
+                </p>
+                <p className="mt-3 text-sm text-[#737d75]">
+                  <span className="font-semibold text-[#9e382b]">*</span> {text.requiredHint}
+                </p>
+              </header>
+
+              <div className="mt-7 border-y border-[#e1e6e0] py-4" aria-live="polite">
+                <div className="flex items-baseline justify-between gap-4">
+                  <p className="text-sm font-bold text-[#293b31]">{text.stepNames[step - 1]}</p>
+                  <p className="shrink-0 text-sm font-medium tabular-nums text-[#758078]">
+                    {text.progress(step)}
                   </p>
-                </header>
-
-                <div className="border-y border-slate-200 py-4" aria-live="polite">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-semibold text-slate-800">
-                      {language === "en" ? `Step ${step} of 5` : `第 ${step} 步，共 5 步`}
-                    </p>
-                    <p className="text-sm text-slate-500">{text.stepNames[step - 1]}</p>
-                  </div>
-                  <div className="mt-3 grid grid-cols-5 gap-1.5" aria-hidden="true">
-                    {[1, 2, 3, 4, 5].map((item) => (
-                      <span
-                        key={item}
-                        className={`h-1.5 rounded-full ${item <= step ? "bg-blue-900" : "bg-slate-200"}`}
-                      />
-                    ))}
-                  </div>
                 </div>
+                <div
+                  className="mt-3 h-1 overflow-hidden rounded-full bg-[#dfe5df]"
+                  role="progressbar"
+                  aria-valuemin={1}
+                  aria-valuemax={5}
+                  aria-valuenow={step}
+                  aria-label={text.stepNames[step - 1]}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="block h-full rounded-full bg-[#285c4d] transition-[width] duration-300 motion-reduce:transition-none"
+                    style={{ width: `${step * 20}%` }}
+                  />
+                </div>
+              </div>
 
-                <form onSubmit={handleSubmit} noValidate>
-                  {step === 1 ? (
-                    <div className="divide-y divide-slate-200">
-                      <FormSection title={text.relationship} hint={text.relationshipHint}>
-                        <Field label={text.relationshipLabel} required>
+              <form onSubmit={handleSubmit} noValidate>
+                {step === 1 ? (
+                  <FormSection title={text.identity} hint={text.identityHint}>
+                    <div className="space-y-6">
+                      <Field label={text.relationshipLabel} required>
+                        <div className="relative">
                           <select
-                            className="input min-h-12 text-base"
+                            className="input min-h-[52px] appearance-none pr-12 text-base"
                             value={form.participant_type}
                             onChange={(event) =>
                               update(
@@ -429,60 +464,63 @@ export default function LionsMemberFormPage() {
                             <option value="interested_in_joining">{text.interestedJoining}</option>
                             <option value="activity_guest">{text.activityGuest}</option>
                           </select>
-                        </Field>
-                      </FormSection>
-
-                      <FormSection title={text.identity} hint={text.identityHint}>
-                        <div className="grid gap-5 sm:grid-cols-2">
-                          <Field label={text.firstName} required>
-                            <input
-                              className="input min-h-12 text-base"
-                              value={form.first_name}
-                              onChange={(event) => update("first_name", event.target.value)}
-                              autoComplete="given-name"
-                              enterKeyHint="next"
-                            />
-                          </Field>
-                          <Field label={text.lastName} required>
-                            <input
-                              className="input min-h-12 text-base"
-                              value={form.last_name}
-                              onChange={(event) => update("last_name", event.target.value)}
-                              autoComplete="family-name"
-                              enterKeyHint="next"
-                            />
-                          </Field>
-                          <Field label={text.middleName} optional={text.optional}>
-                            <input
-                              className="input min-h-12 text-base"
-                              value={form.middle_name}
-                              onChange={(event) => update("middle_name", event.target.value)}
-                              autoComplete="additional-name"
-                              enterKeyHint="next"
-                            />
-                          </Field>
-                          <Field label={text.localName} optional={text.optional}>
-                            <input
-                              className="input min-h-12 text-base"
-                              value={form.local_name}
-                              onChange={(event) => update("local_name", event.target.value)}
-                              enterKeyHint="next"
-                            />
-                          </Field>
-                          <Field label={text.nickname} optional={text.optional}>
-                            <input
-                              className="input min-h-12 text-base"
-                              value={form.nickname}
-                              onChange={(event) => update("nickname", event.target.value)}
-                              enterKeyHint="done"
-                            />
-                          </Field>
+                          <ChevronDown
+                            aria-hidden="true"
+                            className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#667168]"
+                          />
                         </div>
-                      </FormSection>
-                    </div>
-                  ) : null}
+                      </Field>
 
-                  {step === 2 ? (
+                      <div className="grid gap-5 sm:grid-cols-2">
+                        <Field label={text.firstName} required>
+                          <input
+                            className="input min-h-[52px] text-base"
+                            value={form.first_name}
+                            onChange={(event) => update("first_name", event.target.value)}
+                            autoComplete="given-name"
+                            enterKeyHint="next"
+                          />
+                        </Field>
+                        <Field label={text.lastName} required>
+                          <input
+                            className="input min-h-[52px] text-base"
+                            value={form.last_name}
+                            onChange={(event) => update("last_name", event.target.value)}
+                            autoComplete="family-name"
+                            enterKeyHint="next"
+                          />
+                        </Field>
+                        <Field label={text.middleName} optional={text.optional}>
+                          <input
+                            className="input min-h-[52px] text-base"
+                            value={form.middle_name}
+                            onChange={(event) => update("middle_name", event.target.value)}
+                            autoComplete="additional-name"
+                            enterKeyHint="next"
+                          />
+                        </Field>
+                        <Field label={text.localName} optional={text.optional}>
+                          <input
+                            className="input min-h-[52px] text-base"
+                            value={form.local_name}
+                            onChange={(event) => update("local_name", event.target.value)}
+                            enterKeyHint="next"
+                          />
+                        </Field>
+                        <Field label={text.nickname} optional={text.optional}>
+                          <input
+                            className="input min-h-[52px] text-base"
+                            value={form.nickname}
+                            onChange={(event) => update("nickname", event.target.value)}
+                            enterKeyHint="done"
+                          />
+                        </Field>
+                      </div>
+                    </div>
+                  </FormSection>
+                ) : null}
+
+                {step === 2 ? (
                     <FormSection id="member-contact" title={text.contact} hint={text.contactHint}>
                       <div className="grid gap-5 sm:grid-cols-2">
                         <Field label={text.mobile}>
@@ -519,10 +557,10 @@ export default function LionsMemberFormPage() {
                         </Field>
                       </div>
                     </FormSection>
-                  ) : null}
+                ) : null}
 
-                  {step === 3 ? (
-                    <FormSection title={text.address} hint={text.profileHint}>
+                {step === 3 ? (
+                    <FormSection title={text.address} hint={text.addressHint}>
                       <div className="grid gap-5 sm:grid-cols-2">
                         <div className="sm:col-span-2">
                           <Field label={text.address1} optional={text.optional}>
@@ -585,9 +623,9 @@ export default function LionsMemberFormPage() {
                         </Field>
                       </div>
                     </FormSection>
-                  ) : null}
+                ) : null}
 
-                  {step === 4 ? (
+                {step === 4 ? (
                     <FormSection title={text.profile} hint={text.profileHint}>
                       <div className="grid gap-5 sm:grid-cols-2">
                         <Field label={text.birthDate} optional={text.optional}>
@@ -600,18 +638,24 @@ export default function LionsMemberFormPage() {
                           />
                         </Field>
                         <Field label={text.gender} optional={text.optional}>
-                          <select
-                            className="input min-h-12 text-base"
-                            value={form.gender}
-                            onChange={(event) => update("gender", event.target.value)}
-                          >
-                            <option value="">{text.choose}</option>
-                            <option value="Male">{text.male}</option>
-                            <option value="Female">{text.female}</option>
-                            <option value="Non-binary">{text.nonBinary}</option>
-                            <option value="Prefer not to say">{text.preferNot}</option>
-                            <option value="Other">{text.other}</option>
-                          </select>
+                          <div className="relative">
+                            <select
+                              className="input min-h-[52px] appearance-none pr-12 text-base"
+                              value={form.gender}
+                              onChange={(event) => update("gender", event.target.value)}
+                            >
+                              <option value="">{text.choose}</option>
+                              <option value="Male">{text.male}</option>
+                              <option value="Female">{text.female}</option>
+                              <option value="Non-binary">{text.nonBinary}</option>
+                              <option value="Prefer not to say">{text.preferNot}</option>
+                              <option value="Other">{text.other}</option>
+                            </select>
+                            <ChevronDown
+                              aria-hidden="true"
+                              className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#667168]"
+                            />
+                          </div>
                         </Field>
                         <Field label={text.occupation} optional={text.optional}>
                           <input
@@ -646,72 +690,80 @@ export default function LionsMemberFormPage() {
                         </div>
                       </div>
                     </FormSection>
+                ) : null}
+
+                {step === 5 ? (
+                  <section className="space-y-5 py-7 sm:py-8">
+                    <h2 className="text-[1.45rem] font-bold leading-tight text-[#202620]">
+                      {text.consentTitle}
+                    </h2>
+                    <label className="flex min-h-24 cursor-pointer items-start gap-4 rounded-lg border border-[#cbd4cc] bg-[#f5f7f4] p-4 transition hover:border-[#9dac9f] sm:p-5">
+                      <input
+                        className="mt-0.5 h-7 w-7 shrink-0 accent-[#285c4d]"
+                        type="checkbox"
+                        checked={form.consent}
+                        onChange={(event) => update("consent", event.target.checked)}
+                      />
+                      <span className="text-[0.95rem] leading-6 text-[#4f5b52]">
+                        {text.consent} <span className="font-semibold text-[#9e382b]">*</span>
+                      </span>
+                    </label>
+                  </section>
+                ) : null}
+
+                {error ? (
+                  <p
+                    role="alert"
+                    className="mb-4 rounded-lg border border-[#e0b8ad] bg-[#fff6f2] p-3.5 text-sm font-medium leading-6 text-[#873b2e]"
+                  >
+                    {error}
+                  </p>
+                ) : null}
+
+                <div
+                  className={`grid gap-3 border-t border-[#e1e6e0] pt-5 ${
+                    step > 1 ? "grid-cols-[minmax(0,0.9fr)_minmax(0,1.4fr)]" : ""
+                  }`}
+                >
+                  {step > 1 ? (
+                    <button
+                      type="button"
+                      className="inline-flex min-h-14 items-center justify-center gap-2 rounded-lg border border-[#c5cec7] bg-white px-3 text-base font-semibold text-[#344139] transition hover:bg-[#f4f7f4] active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60"
+                      onClick={() => goToStep(step - 1)}
+                      disabled={submitting}
+                    >
+                      <ArrowLeft aria-hidden="true" className="h-5 w-5" />
+                      {text.back}
+                    </button>
                   ) : null}
 
-                  {step === 5 ? (
-                    <section className="space-y-5 py-6 sm:py-7">
-                      <div>
-                        <h2 className="text-xl font-semibold">{text.consentTitle}</h2>
-                      </div>
-                      <label className="flex min-h-20 cursor-pointer items-start gap-4 rounded-md border border-slate-300 bg-slate-50 p-4">
-                        <input
-                          className="mt-1 h-7 w-7 shrink-0 accent-blue-800"
-                          type="checkbox"
-                          checked={form.consent}
-                          onChange={(event) => update("consent", event.target.checked)}
-                        />
-                        <span className="text-sm leading-6 text-slate-700">
-                          {text.consent} <span className="text-red-700">*</span>
-                        </span>
-                      </label>
-                    </section>
-                  ) : null}
-
-                  {error ? (
-                    <p role="alert" className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm leading-6 text-red-800">
-                      {error}
-                    </p>
-                  ) : null}
-
-                  <div className={`grid gap-3 border-t border-slate-200 pt-5 ${step > 1 ? "grid-cols-[minmax(0,2fr)_minmax(0,3fr)]" : ""}`}>
-                    {step > 1 ? (
-                      <button
-                        type="button"
-                        className="inline-flex min-h-14 items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-3 text-base font-semibold text-slate-800"
-                        onClick={() => goToStep(step - 1)}
-                        disabled={submitting}
-                      >
-                        <ArrowLeft aria-hidden="true" className="h-5 w-5" />
-                        {text.back}
-                      </button>
-                    ) : null}
-
-                    {step < 5 ? (
-                      <button
-                        type="button"
-                        className="inline-flex min-h-14 items-center justify-center gap-2 rounded-md bg-blue-900 px-4 text-base font-semibold text-white transition hover:bg-blue-950"
-                        onClick={continueToNextStep}
-                      >
-                        {(step === 3 || step === 4) && !optionalStepHasData
-                          ? text.skip
-                          : text.continue}
-                        <ArrowRight aria-hidden="true" className="h-5 w-5" />
-                      </button>
-                    ) : (
-                      <button
-                        type="submit"
-                        className="inline-flex min-h-14 items-center justify-center gap-2 rounded-md bg-blue-900 px-4 text-base font-semibold text-white transition hover:bg-blue-950 disabled:cursor-not-allowed disabled:opacity-60"
-                        disabled={submitting}
-                      >
-                        {submitting ? <LoaderCircle aria-hidden="true" className="h-5 w-5 animate-spin" /> : null}
-                        {submitting ? text.submitting : text.submit}
-                      </button>
-                    )}
-                  </div>
-                </form>
-              </>
-            )}
-          </div>
+                  {step < 5 ? (
+                    <button
+                      type="button"
+                      className="inline-flex min-h-14 items-center justify-center gap-2 rounded-lg bg-[#285c4d] px-4 text-base font-semibold text-white shadow-[0_8px_20px_rgba(40,92,77,0.18)] transition hover:bg-[#204b3f] active:translate-y-px"
+                      onClick={continueToNextStep}
+                    >
+                      {(step === 3 || step === 4) && !optionalStepHasData
+                        ? text.skip
+                        : text.continue}
+                      <ArrowRight aria-hidden="true" className="h-5 w-5" />
+                    </button>
+                  ) : (
+                    <button
+                      type="submit"
+                      className="inline-flex min-h-14 items-center justify-center gap-2 rounded-lg bg-[#285c4d] px-4 text-base font-semibold text-white shadow-[0_8px_20px_rgba(40,92,77,0.18)] transition hover:bg-[#204b3f] active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60"
+                      disabled={submitting}
+                    >
+                      {submitting ? (
+                        <LoaderCircle aria-hidden="true" className="h-5 w-5 animate-spin" />
+                      ) : null}
+                      {submitting ? text.submitting : text.submit}
+                    </button>
+                  )}
+                </div>
+              </form>
+            </div>
+          )}
         </div>
       </div>
     </main>
@@ -730,10 +782,13 @@ function FormSection({
   title: string;
 }) {
   return (
-    <section id={id} className="scroll-mt-4 space-y-5 py-7">
+    <section
+      id={id}
+      className="scroll-mt-4 space-y-6 py-7 sm:py-8 [&_.input]:rounded-lg [&_.input]:border-[#cbd4cc] [&_.input]:bg-[#f8faf7] [&_.input]:px-4 [&_.input]:py-3 [&_.input]:text-[#263029] [&_.input]:placeholder:text-[#7c867e] [&_.input]:focus:border-[#285c4d] [&_.input]:focus:ring-[#285c4d]/15"
+    >
       <div>
-        <h2 className="text-xl font-semibold">{title}</h2>
-        {hint ? <p className="mt-1 text-sm leading-6 text-slate-500">{hint}</p> : null}
+        <h2 className="text-[1.45rem] font-bold leading-tight text-[#202620]">{title}</h2>
+        {hint ? <p className="mt-2 text-sm leading-6 text-[#6b766e]">{hint}</p> : null}
       </div>
       {children}
     </section>
@@ -753,8 +808,13 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-medium text-slate-800">
-        {label} {required ? <span className="text-red-700">*</span> : optional ? <span className="font-normal text-slate-400">({optional})</span> : null}
+      <span className="mb-2 block text-sm font-semibold text-[#37423a]">
+        {label}{" "}
+        {required ? (
+          <span className="text-[#9e382b]">*</span>
+        ) : optional ? (
+          <span className="font-normal text-[#7b857d]">({optional})</span>
+        ) : null}
       </span>
       {children}
     </label>
