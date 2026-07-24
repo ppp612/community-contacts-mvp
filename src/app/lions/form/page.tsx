@@ -122,6 +122,7 @@ const copy = {
     submitting: "Submitting...",
     contactError: "Mobile and email are required.",
     addressError: "Complete the postal address.",
+    profileError: "Date of birth and gender are required.",
     nameError: "First and last name are required.",
     emailError: "Enter a valid email address.",
     consentError: "Please confirm before submitting.",
@@ -187,6 +188,7 @@ const copy = {
     submitting: "正在提交...",
     contactError: "请填写手机和邮箱。",
     addressError: "请填写完整通讯地址。",
+    profileError: "请填写出生日期和性别。",
     nameError: "请填写英文名和英文姓氏。",
     emailError: "请输入有效邮箱。",
     consentError: "请勾选同意。",
@@ -210,14 +212,6 @@ export default function LionsMemberFormPage() {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
   const text = copy[language];
-  const optionalStepHasData = Boolean(
-    form.birth_date ||
-      form.gender ||
-      form.occupation ||
-      form.spouse_name ||
-      form.sponsor_name ||
-      form.additional_notes
-  );
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -272,6 +266,11 @@ export default function LionsMemberFormPage() {
       return;
     }
 
+    if (step === 4 && (!form.birth_date || !form.gender)) {
+      setError(text.profileError);
+      return;
+    }
+
     goToStep(Math.min(5, step + 1));
   }
 
@@ -309,6 +308,13 @@ export default function LionsMemberFormPage() {
     ) {
       setStep(3);
       setError(text.addressError);
+      scrollToForm();
+      return;
+    }
+
+    if (!form.birth_date || !form.gender) {
+      setStep(4);
+      setError(text.profileError);
       scrollToForm();
       return;
     }
@@ -656,21 +662,23 @@ export default function LionsMemberFormPage() {
                 {step === 4 ? (
                     <FormSection title={text.profile} hint={text.profileHint}>
                       <div className="grid gap-5 sm:grid-cols-2">
-                        <Field label={text.birthDate} optional={text.optional}>
+                        <Field label={text.birthDate} required>
                           <input
                             className="input min-h-12 text-base"
                             type="date"
                             value={form.birth_date}
                             onChange={(event) => update("birth_date", event.target.value)}
                             autoComplete="bday"
+                            required
                           />
                         </Field>
-                        <Field label={text.gender} optional={text.optional}>
+                        <Field label={text.gender} required>
                           <div className="relative">
                             <select
                               className="input min-h-[52px] appearance-none pr-12 text-base"
                               value={form.gender}
                               onChange={(event) => update("gender", event.target.value)}
+                              required
                             >
                               <option value="">{text.choose}</option>
                               <option value="Male">{text.male}</option>
@@ -771,7 +779,7 @@ export default function LionsMemberFormPage() {
                       className="inline-flex min-h-14 items-center justify-center gap-2 rounded-lg bg-[#285c4d] px-4 text-base font-semibold text-white shadow-[0_8px_20px_rgba(40,92,77,0.18)] transition hover:bg-[#204b3f] active:translate-y-px"
                       onClick={continueToNextStep}
                     >
-                      {step === 4 && !optionalStepHasData ? text.skip : text.continue}
+                      {text.continue}
                       <ArrowRight aria-hidden="true" className="h-5 w-5" />
                     </button>
                   ) : (
